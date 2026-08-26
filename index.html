@@ -869,7 +869,7 @@
         if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
         if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
         const proxy = "https://corsproxy.io/";
-        const API_KEY = "57a8707e27744a5088d7f9d276e2203e";
+        const API_KEY = "8811bc89603a43c89a8263ec702f97bc";
         const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(apiSymbol)}&apikey=${API_KEY}&_=${Date.now()}`;
         try {
             const response = await fetch(proxy + url);
