@@ -409,6 +409,7 @@
             gap: 6px;
             transition: all 0.3s;
             box-shadow: 0 0 8px rgba(0,255,170,0.3);
+            text-decoration: none;
         }
         .promo-button:hover {
             transform: translateY(-2px);
@@ -688,6 +689,128 @@
         animateParticles();
     }
 
+    // ========== 1 API KEY UNIFIED ==========
+    const TWELVE_DATA_API_KEY = "8811bc89603a43c89a8263ec702f97bc";
+
+    // ========== FUNGSI DETEKSI PAIR & API ==========
+    function normalizePair(pair) {
+        if (!pair) return pair;
+        let clean = pair.toUpperCase().replace(/[._\-][A-Z0-9]*$/, '').replace(/[0-9]+$/, '');
+        if (clean.startsWith('XAU') || clean === 'GOLD') return 'XAUUSD';
+        if (clean.startsWith('XAG') || clean === 'SILVER') return 'XAGUSD';
+        if (clean.startsWith('BTC')) return 'BTCUSD';
+        if (clean.startsWith('ETH')) return 'ETHUSD';
+        if (clean.startsWith('SOL')) return 'SOLUSD';
+        if (clean.startsWith('XRP')) return 'XRPUSD';
+        if (clean.startsWith('BNB')) return 'BNBUSD';
+        const forexMatch = clean.match(/^([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)$/);
+        if (forexMatch) return `${forexMatch[1]}/${forexMatch[2]}`;
+        return pair;
+    }
+    function detectPairFromText(text) {
+        if (!text) return null;
+        if (/\bXAU|\bGOLD|\bEMAS/i.test(text)) return 'XAUUSD';
+        if (/\bBTC/i.test(text)) return 'BTCUSD';
+        if (/\bETH/i.test(text)) return 'ETHUSD';
+        const forex = text.match(/\b([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)\b/i);
+        if (forex) return `${forex[1].toUpperCase()}/${forex[2].toUpperCase()}`;
+        return null;
+    }
+    
+    async function getRealTimePrice(symbol) {
+        // Crypto via CoinGecko
+        if (symbol === 'BTCUSD') {
+            try {
+                const proxy = "https://corsproxy.io/";
+                const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&_=${Date.now()}`;
+                const res = await fetch(proxy + url);
+                const json = await res.json();
+                if (json && json.bitcoin && json.bitcoin.usd) return { price: json.bitcoin.usd, timestamp: new Date().toISOString() };
+            } catch(e) { console.warn("BTC price fallback failed"); }
+        }
+        if (symbol === 'ETHUSD') {
+            try {
+                const proxy = "https://corsproxy.io/";
+                const url = `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&_=${Date.now()}`;
+                const res = await fetch(proxy + url);
+                const json = await res.json();
+                if (json && json.ethereum && json.ethereum.usd) return { price: json.ethereum.usd, timestamp: new Date().toISOString() };
+            } catch(e) { console.warn("ETH price fallback failed"); }
+        }
+        
+        let apiSymbol = symbol;
+        if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
+        if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
+        if (symbol === 'BTCUSD') apiSymbol = 'BTC/USD';
+        if (symbol === 'ETHUSD') apiSymbol = 'ETH/USD';
+        if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
+        if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
+        if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
+        
+        const proxy = "https://corsproxy.io/";
+        const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(apiSymbol)}&apikey=${TWELVE_DATA_API_KEY}&_=${Date.now()}`;
+        try {
+            const response = await fetch(proxy + url);
+            const json = await response.json();
+            console.log("Quote Response:", json);
+            if (json && json.last && !json.code && !json.status) {
+                return { price: parseFloat(json.last), timestamp: json.datetime || new Date().toISOString() };
+            }
+            if (json.status === 'error') {
+                console.warn("Quote API Error:", json.message);
+            }
+            return null;
+        } catch(err) { 
+            console.error("GetRealTimePrice error:", err);
+            return null; 
+        }
+    }
+    
+    async function fetchMarketData(symbol, interval) {
+        let apiSymbol = symbol;
+        if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
+        if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
+        if (symbol === 'BTCUSD') apiSymbol = 'BTC/USD';
+        if (symbol === 'ETHUSD') apiSymbol = 'ETH/USD';
+        if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
+        if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
+        if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
+        
+        const proxy = "https://corsproxy.io/";
+        const output = (interval === '1min' || interval === '5min') ? 150 : 100;
+        const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(apiSymbol)}&interval=${interval}&outputsize=${output}&apikey=${TWELVE_DATA_API_KEY}`;
+        
+        console.log("Fetching Market Data:", url);
+        
+        try {
+            const response = await fetch(proxy + url);
+            const json = await response.json();
+            
+            console.log("Market Data Response:", json);
+            
+            // Cek error dari API
+            if (json.status === 'error') {
+                throw new Error(`API Error: ${json.message || 'Unknown error'}`);
+            }
+            
+            if (!json || !json.values || json.values.length < 30) {
+                throw new Error(`Data tidak mencukupi: ${json?.values?.length || 0} bars received`);
+            }
+            
+            const values = json.values.reverse();
+            return {
+                highs: values.map(v => parseFloat(v.high)),
+                lows: values.map(v => parseFloat(v.low)),
+                closes: values.map(v => parseFloat(v.close)),
+                volumes: values.map(v => v.volume ? parseFloat(v.volume) : null),
+                currentPrice: parseFloat(values[values.length - 1].close)
+            };
+        } catch(err) {
+            console.error("FetchMarketData error:", err);
+            throw err;
+        }
+    }
+
     // ========== CREDIT SYSTEM (pengguna baru: 1, daily: 1, harga beli 9000) ==========
     let lifetimeCredit = 0, dailyCredit = 0;
     function initLimitSystem() {
@@ -821,84 +944,6 @@
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Konfirmasi Pembayaran';
     };
-
-    // ========== FUNGSI DETEKSI PAIR & API ==========
-    function normalizePair(pair) {
-        if (!pair) return pair;
-        let clean = pair.toUpperCase().replace(/[._\-][A-Z0-9]*$/, '').replace(/[0-9]+$/, '');
-        if (clean.startsWith('XAU') || clean === 'GOLD') return 'XAUUSD';
-        if (clean.startsWith('XAG') || clean === 'SILVER') return 'XAGUSD';
-        if (clean.startsWith('BTC')) return 'BTCUSD';
-        if (clean.startsWith('ETH')) return 'ETHUSD';
-        if (clean.startsWith('SOL')) return 'SOLUSD';
-        if (clean.startsWith('XRP')) return 'XRPUSD';
-        if (clean.startsWith('BNB')) return 'BNBUSD';
-        const forexMatch = clean.match(/^([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)$/);
-        if (forexMatch) return `${forexMatch[1]}/${forexMatch[2]}`;
-        return pair;
-    }
-    function detectPairFromText(text) {
-        if (!text) return null;
-        if (/\bXAU|\bGOLD|\bEMAS/i.test(text)) return 'XAUUSD';
-        if (/\bBTC/i.test(text)) return 'BTCUSD';
-        if (/\bETH/i.test(text)) return 'ETHUSD';
-        const forex = text.match(/\b([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)\b/i);
-        if (forex) return `${forex[1].toUpperCase()}/${forex[2].toUpperCase()}`;
-        return null;
-    }
-    async function getRealTimePrice(symbol) {
-        if (symbol === 'BTCUSD') {
-            try {
-                const proxy = "https://corsproxy.io/";
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&_=${Date.now()}`;
-                const res = await fetch(proxy + url);
-                const json = await res.json();
-                if (json && json.bitcoin && json.bitcoin.usd) return { price: json.bitcoin.usd, timestamp: new Date().toISOString() };
-            } catch(e) {}
-        }
-        if (symbol === 'ETHUSD') {
-            try {
-                const proxy = "https://corsproxy.io/";
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&_=${Date.now()}`;
-                const res = await fetch(proxy + url);
-                const json = await res.json();
-                if (json && json.ethereum && json.ethereum.usd) return { price: json.ethereum.usd, timestamp: new Date().toISOString() };
-            } catch(e) {}
-        }
-        let apiSymbol = symbol;
-        if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
-        if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
-        const proxy = "https://corsproxy.io/";
-        const API_KEY = "8811bc89603a43c89a8263ec702f97bc";
-        const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(apiSymbol)}&apikey=${API_KEY}&_=${Date.now()}`;
-        try {
-            const response = await fetch(proxy + url);
-            const json = await response.json();
-            if (json && json.last && !json.code) return { price: parseFloat(json.last), timestamp: json.datetime || new Date().toISOString() };
-            return null;
-        } catch(err) { return null; }
-    }
-    async function fetchMarketData(symbol, interval) {
-        let apiSymbol = symbol;
-        if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
-        if (symbol === 'BTCUSD') apiSymbol = 'BTC/USD';
-        if (symbol === 'ETHUSD') apiSymbol = 'ETH/USD';
-        const proxy = "https://corsproxy.io/";
-        const API_KEY = "8811bc89603a43c89a8263ec702f97bc";
-        const output = (interval === '1min' || interval === '5min') ? 150 : 100;
-        const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(apiSymbol)}&interval=${interval}&outputsize=${output}&apikey=${API_KEY}`;
-        const response = await fetch(proxy + url);
-        const json = await response.json();
-        if (!json || !json.values || json.values.length < 30) throw new Error("Data tidak mencukupi");
-        const values = json.values.reverse();
-        return {
-            highs: values.map(v => parseFloat(v.high)),
-            lows: values.map(v => parseFloat(v.low)),
-            closes: values.map(v => parseFloat(v.close)),
-            volumes: values.map(v => v.volume ? parseFloat(v.volume) : null),
-            currentPrice: parseFloat(values[values.length - 1].close)
-        };
-    }
 
     // ========== 15 INDICATORS VOTING (CLASS LENGKAP) ==========
     class FifteenIndicatorsVoting {
@@ -1338,7 +1383,13 @@
                 setTimeout(() => loader.remove(), 400);
                 const tfDisplay = { '1min': 'M1', '5min': 'M5', '15min': 'M15', '30min': 'M30', '1h': 'H1', '4h': 'H4', '1day': 'Daily' }[currentTimeframe] || 'H1';
                 renderSignalOutput(result, currentSymbol, tfDisplay, livePrice, liveTimestamp);
-            } catch (err) { console.error(err); clearInterval(interval); loader.remove(); alert("Error: " + err.message); }
+            } catch (err) { 
+                console.error(err); 
+                clearInterval(interval); 
+                loader.remove(); 
+                alert("Error: " + err.message); 
+                showToast('❌ Error', err.message, 'fa-exclamation-triangle', 5000);
+            }
         };
     }
     if (resetBtn) {
