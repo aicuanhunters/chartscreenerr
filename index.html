@@ -884,7 +884,7 @@
         if (symbol === 'BTCUSD') apiSymbol = 'BTC/USD';
         if (symbol === 'ETHUSD') apiSymbol = 'ETH/USD';
         const proxy = "https://corsproxy.io/";
-        const API_KEY = "57a8707e27744a5088d7f9d276e2203e";
+        const API_KEY = "8811bc89603a43c89a8263ec702f97bc";
         const output = (interval === '1min' || interval === '5min') ? 150 : 100;
         const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(apiSymbol)}&interval=${interval}&outputsize=${output}&apikey=${API_KEY}`;
         const response = await fetch(proxy + url);
