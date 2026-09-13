@@ -626,7 +626,8 @@
 
     // ========== DETEKSI TIMEFRAME ==========
     function detectTimeframeImproved(text) {
-        const lower = text.toLowerCase();
+        const lower = (text || '').toLowerCase();
+        if (/\bd1\b|\b1d\b|\bdaily\b/.test(lower)) return { interval: '1day', display: 'D1' };
         if (/\bh4\b|\b4h\b|\b4 hour\b/.test(lower)) return { interval: '4h', display: 'H4' };
         if (/\bh1\b|\b1h\b|\b1 hour\b/.test(lower)) return { interval: '1h', display: 'H1' };
         if (/\bm30\b|\b30m\b|\b30 min\b/.test(lower)) return { interval: '30min', display: 'M30' };
@@ -647,13 +648,23 @@
             const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
-            const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), new THREE.MeshStandardMaterial({ map: texture, roughness: 0.4 }));
+            const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), new THREE.MeshStandardMaterial({ map: texture, roughness: 0.4 }));
             scene.add(earth);
             const ambient = new THREE.AmbientLight(0x404060);
             const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(2, 1, 2);
             scene.add(ambient, light);
-            function animate() { requestAnimationFrame(animate); earth.rotation.y += 0.003; renderer.render(scene, camera); }
+            let globeActive = true;
+            function animate() { 
+                if (!globeActive) return;
+                requestAnimationFrame(animate); 
+                earth.rotation.y += 0.003; 
+                renderer.render(scene, camera); 
+            }
             animate();
+            document.addEventListener('visibilitychange', () => {
+                globeActive = !document.hidden;
+                if (globeActive) animate();
+            });
             window.addEventListener('resize', () => { camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
         }
         let prog = 0; const fillBar = document.getElementById('loaderFill');
@@ -676,6 +687,7 @@
     if (pCanvas) {
         const pCtx = pCanvas.getContext('2d');
         let particles = [];
+        let particleAnimId = null;
         function resizeParticles() { pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeParticles);
         resizeParticles();
@@ -685,8 +697,20 @@
             draw() { pCtx.beginPath(); pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); pCtx.fillStyle = `rgba(44, 156, 212, ${this.opacity})`; pCtx.fill(); }
         }
         for (let i = 0; i < 100; i++) particles.push(new GlowParticle());
-        function animateParticles() { pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+        function animateParticles() { 
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height); 
+            particles.forEach(p => { p.update(); p.draw(); }); 
+            particleAnimId = requestAnimationFrame(animateParticles); 
+        }
         animateParticles();
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (particleAnimId) cancelAnimationFrame(particleAnimId);
+                particleAnimId = null;
+            } else {
+                if (!particleAnimId) animateParticles();
+            }
+        });
     }
 
     // ========== 1 API KEY UNIFIED ==========
@@ -695,7 +719,11 @@
     // ========== FUNGSI DETEKSI PAIR & API ==========
     function normalizePair(pair) {
         if (!pair) return pair;
-        let clean = pair.toUpperCase().replace(/[._\-][A-Z0-9]*$/, '').replace(/[0-9]+$/, '');
+        let clean = pair.toUpperCase()
+            .replace(/[._\-][A-Z0-9]*$/, '')
+            .replace(/[M#]$/, '')
+            .replace(/[0-9]+$/, '')
+            .replace(/\s+/g, '');
         if (clean.startsWith('XAU') || clean === 'GOLD') return 'XAUUSD';
         if (clean.startsWith('XAG') || clean === 'SILVER') return 'XAGUSD';
         if (clean.startsWith('BTC')) return 'BTCUSD';
@@ -703,41 +731,109 @@
         if (clean.startsWith('SOL')) return 'SOLUSD';
         if (clean.startsWith('XRP')) return 'XRPUSD';
         if (clean.startsWith('BNB')) return 'BNBUSD';
-        const forexMatch = clean.match(/^([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)$/);
+        const forexMatch = clean.match(/^([A-Z]{3})([A-Z]{3})$/);
         if (forexMatch) return `${forexMatch[1]}/${forexMatch[2]}`;
         return pair;
     }
+
     function detectPairFromText(text) {
         if (!text) return null;
-        if (/\bXAU|\bGOLD|\bEMAS/i.test(text)) return 'XAUUSD';
-        if (/\bBTC/i.test(text)) return 'BTCUSD';
-        if (/\bETH/i.test(text)) return 'ETHUSD';
-        const forex = text.match(/\b([A-Z]{3})(USD|JPY|GBP|EUR|AUD|CAD|CHF|NZD)\b/i);
-        if (forex) return `${forex[1].toUpperCase()}/${forex[2].toUpperCase()}`;
+        const upper = text.toUpperCase();
+        const patterns = [
+            /\bXAU\s*USD[M#._]?\b/,
+            /\bXAU[A-Z]{0,3}\b/,
+            /\bGOLD[M#._]?\b/,
+            /\bXAG\s*USD[M#._]?\b/,
+            /\bSILVER[M#._]?\b/,
+            /\bBTC\s*USD[M#._]?\b/,
+            /\bBTC[A-Z]{0,3}\b/,
+            /\bETH\s*USD[M#._]?\b/,
+            /\bETH[A-Z]{0,3}\b/,
+            /\bSOL\s*USD[M#._]?\b/,
+            /\bXRP\s*USD[M#._]?\b/,
+            /\bBNB\s*USD[M#._]?\b/,
+        ];
+        for (const p of patterns) {
+            const m = upper.match(p);
+            if (m) {
+                const raw = m[0].replace(/[M#._]/g, '').replace(/\s/g, '');
+                return normalizePair(raw);
+            }
+        }
+        const forex = upper.match(/\b([A-Z]{3})[\s\/\-]?([A-Z]{3})\b/);
+        if (forex) {
+            const base = forex[1], quote = forex[2];
+            const validCur = ['USD','JPY','GBP','EUR','AUD','CAD','CHF','NZD'];
+            if (validCur.includes(quote) || validCur.includes(base)) {
+                return `${base}/${quote}`;
+            }
+        }
         return null;
     }
-    
+
+    // ========== HELPER: MULTI-PROXY FETCH ==========
+    async function fetchWithProxy(url, options = {}) {
+        const proxies = [
+            { name: 'direct',     build: (u) => u },
+            { name: 'allorigins', build: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+            { name: 'corsproxy',  build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
+            { name: 'cors.eu',    build: (u) => `https://cors.eu.org/${u}` },
+            { name: 'codetabs',   build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+        ];
+        let lastErr = null;
+        for (const proxy of proxies) {
+            try {
+                const proxyUrl = proxy.build(url);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+                const res = await fetch(proxyUrl, { ...options, signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!res.ok) {
+                    lastErr = new Error(`${proxy.name}: HTTP ${res.status}`);
+                    continue;
+                }
+                const text = await res.text();
+                if (!text || text.trim().startsWith('<')) {
+                    lastErr = new Error(`${proxy.name}: HTML response`);
+                    continue;
+                }
+                let json;
+                try { json = JSON.parse(text); } catch(e) {
+                    lastErr = new Error(`${proxy.name}: invalid JSON`);
+                    continue;
+                }
+                console.log(`✅ [${proxy.name}] OK`);
+                return { json, proxy: proxy.name };
+            } catch(err) {
+                if (err.name === 'AbortError') lastErr = new Error(`${proxy.name}: timeout`);
+                else lastErr = err;
+                console.warn(`[${proxy.name}] Gagal:`, err.message);
+            }
+        }
+        throw lastErr || new Error('Semua proxy gagal');
+    }
+
+    // ========== GET REAL-TIME PRICE ==========
     async function getRealTimePrice(symbol) {
         // Crypto via CoinGecko
-        if (symbol === 'BTCUSD') {
+        const cryptoMap = {
+            'BTCUSD': 'bitcoin',
+            'ETHUSD': 'ethereum',
+            'SOLUSD': 'solana',
+            'XRPUSD': 'ripple',
+            'BNBUSD': 'binancecoin'
+        };
+        if (cryptoMap[symbol]) {
             try {
-                const proxy = "https://corsproxy.io/";
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&_=${Date.now()}`;
-                const res = await fetch(proxy + url);
-                const json = await res.json();
-                if (json && json.bitcoin && json.bitcoin.usd) return { price: json.bitcoin.usd, timestamp: new Date().toISOString() };
-            } catch(e) { console.warn("BTC price fallback failed"); }
+                const coinId = cryptoMap[symbol];
+                const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`;
+                const { json } = await fetchWithProxy(url);
+                if (json && json[coinId] && json[coinId].usd) {
+                    return { price: json[coinId].usd, timestamp: new Date().toISOString() };
+                }
+            } catch(e) { console.warn("CoinGecko fallback failed:", e.message); }
         }
-        if (symbol === 'ETHUSD') {
-            try {
-                const proxy = "https://corsproxy.io/";
-                const url = `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&_=${Date.now()}`;
-                const res = await fetch(proxy + url);
-                const json = await res.json();
-                if (json && json.ethereum && json.ethereum.usd) return { price: json.ethereum.usd, timestamp: new Date().toISOString() };
-            } catch(e) { console.warn("ETH price fallback failed"); }
-        }
-        
+
         let apiSymbol = symbol;
         if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
         if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
@@ -746,26 +842,23 @@
         if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
         if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
         if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
-        
-        const proxy = "https://corsproxy.io/";
-        const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(apiSymbol)}&apikey=${TWELVE_DATA_API_KEY}&_=${Date.now()}`;
+
+        const url = `https://api.twelvedata.com/quote?symbol=${apiSymbol}&apikey=${TWELVE_DATA_API_KEY}`;
         try {
-            const response = await fetch(proxy + url);
-            const json = await response.json();
+            const { json } = await fetchWithProxy(url);
             console.log("Quote Response:", json);
             if (json && json.last && !json.code && !json.status) {
                 return { price: parseFloat(json.last), timestamp: json.datetime || new Date().toISOString() };
             }
-            if (json.status === 'error') {
-                console.warn("Quote API Error:", json.message);
-            }
+            if (json.status === 'error') console.warn("Quote API Error:", json.message);
             return null;
-        } catch(err) { 
+        } catch(err) {
             console.error("GetRealTimePrice error:", err);
-            return null; 
+            return null;
         }
     }
-    
+
+    // ========== FETCH MARKET DATA (Twelve Data + Yahoo fallback) ==========
     async function fetchMarketData(symbol, interval) {
         let apiSymbol = symbol;
         if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
@@ -775,29 +868,30 @@
         if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
         if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
         if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
-        
-        const proxy = "https://corsproxy.io/";
-        const output = (interval === '1min' || interval === '5min') ? 150 : 100;
-        const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(apiSymbol)}&interval=${interval}&outputsize=${output}&apikey=${TWELVE_DATA_API_KEY}`;
-        
-        console.log("Fetching Market Data:", url);
-        
+
+        const output = (interval === '1min' || interval === '5min') ? 100 : 80;
+        const url = `https://api.twelvedata.com/time_series?symbol=${apiSymbol}&interval=${interval}&outputsize=${output}&apikey=${TWELVE_DATA_API_KEY}`;
+
+        console.log("Fetching Twelve Data:", url);
+
         try {
-            const response = await fetch(proxy + url);
-            const json = await response.json();
-            
-            console.log("Market Data Response:", json);
-            
-            // Cek error dari API
-            if (json.status === 'error') {
-                throw new Error(`API Error: ${json.message || 'Unknown error'}`);
+            const { json, proxy } = await fetchWithProxy(url);
+            console.log(`[${proxy}] Response:`, json);
+
+            if (json.status === 'error' || json.code) {
+                const msg = json.message || `Code ${json.code}`;
+                // 404/429 → jangan coba Yahoo dulu, karena mungkin salah symbol
+                if (json.code === 404) throw new Error(`Symbol ${apiSymbol} tidak ditemukan di Twelve Data`);
+                if (json.code === 429) throw new Error(`Twelve Data rate limit: ${msg}`);
+                throw new Error(`API Error: ${msg}`);
             }
-            
-            if (!json || !json.values || json.values.length < 30) {
-                throw new Error(`Data tidak mencukupi: ${json?.values?.length || 0} bars received`);
+
+            if (!json.values || !Array.isArray(json.values) || json.values.length < 20) {
+                throw new Error(`Data tidak mencukupi: ${json?.values?.length || 0} bars`);
             }
-            
+
             const values = json.values.reverse();
+            console.log(`✅ Twelve Data OK: ${values.length} bars`);
             return {
                 highs: values.map(v => parseFloat(v.high)),
                 lows: values.map(v => parseFloat(v.low)),
@@ -805,18 +899,80 @@
                 volumes: values.map(v => v.volume ? parseFloat(v.volume) : null),
                 currentPrice: parseFloat(values[values.length - 1].close)
             };
-        } catch(err) {
-            console.error("FetchMarketData error:", err);
-            throw err;
+        } catch(tdErr) {
+            console.warn("Twelve Data gagal:", tdErr.message, "→ Fallback ke Yahoo Finance...");
+            try {
+                return await fetchFromYahoo(symbol, interval);
+            } catch(yahooErr) {
+                throw new Error(`Twelve Data: ${tdErr.message} | Yahoo: ${yahooErr.message}`);
+            }
         }
     }
 
-    // ========== CREDIT SYSTEM (pengguna baru: 1, daily: 1, harga beli 9000) ==========
+    // ========== YAHOO FINANCE FALLBACK ==========
+    async function fetchFromYahoo(symbol, interval) {
+        let yahooSymbol = symbol;
+        if (symbol === 'XAUUSD') yahooSymbol = 'GC=F';
+        if (symbol === 'XAGUSD') yahooSymbol = 'SI=F';
+        if (symbol === 'BTCUSD') yahooSymbol = 'BTC-USD';
+        if (symbol === 'ETHUSD') yahooSymbol = 'ETH-USD';
+        if (symbol === 'SOLUSD') yahooSymbol = 'SOL-USD';
+        if (symbol === 'XRPUSD') yahooSymbol = 'XRP-USD';
+        if (symbol === 'BNBUSD') yahooSymbol = 'BNB-USD';
+        if (symbol.includes('/')) yahooSymbol = symbol.replace('/', '') + '=X';
+
+        const intervalMap = {
+            '1min': '1m', '5min': '5m', '15min': '15m', '30min': '30m',
+            '1h': '1h', '4h': '1h', '1day': '1d'
+        };
+        const yInterval = intervalMap[interval] || '1h';
+
+        const rangeMap = {
+            '1m': '5d', '5m': '1mo', '15m': '1mo', '30m': '3mo',
+            '1h': '3mo', '1d': '1y'
+        };
+        const range = rangeMap[yInterval] || '3mo';
+
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${yInterval}&range=${range}`;
+        console.log("Fetching Yahoo:", url);
+
+        const { json, proxy } = await fetchWithProxy(url);
+        console.log(`[${proxy}] Yahoo Response:`, json);
+
+        const result = json?.chart?.result?.[0];
+        if (!result || !result.timestamp) {
+            throw new Error('Yahoo: tidak ada data chart');
+        }
+
+        const q = result.indicators.quote[0];
+        const highs = [], lows = [], closes = [], volumes = [];
+        for (let i = 0; i < result.timestamp.length; i++) {
+            if (q.high[i] != null && q.low[i] != null && q.close[i] != null) {
+                highs.push(q.high[i]);
+                lows.push(q.low[i]);
+                closes.push(q.close[i]);
+                volumes.push(q.volume ? q.volume[i] : null);
+            }
+        }
+
+        if (closes.length < 20) {
+            throw new Error(`Yahoo: hanya ${closes.length} bars`);
+        }
+
+        console.log(`✅ Yahoo OK: ${closes.length} bars`);
+        return {
+            highs, lows, closes,
+            volumes: volumes.some(v => v !== null) ? volumes : null,
+            currentPrice: closes[closes.length - 1]
+        };
+    }
+
+    // ========== CREDIT SYSTEM ==========
     let lifetimeCredit = 0, dailyCredit = 0;
     function initLimitSystem() {
         let storedLifetime = localStorage.getItem('screener_lifetime_credits');
         let isNewDay = false;
-        if (storedLifetime === null) { 
+        if (storedLifetime === null) {
             lifetimeCredit = 1;
             localStorage.setItem('screener_lifetime_credits', '1');
             showToast('🎉 Selamat Datang!', 'Anda mendapatkan 1 credit gratis sebagai pengguna baru.', 'fa-gem', 5000);
@@ -825,15 +981,15 @@
         }
         let lastDailyDate = localStorage.getItem('screener_last_daily_grant');
         let today = new Date().toDateString();
-        if (lifetimeCredit > 0) { 
-            dailyCredit = 0; 
+        if (lifetimeCredit > 0) {
+            dailyCredit = 0;
             localStorage.setItem('screener_daily_credit', '0');
         } else {
             let storedDaily = localStorage.getItem('screener_daily_credit');
-            if (lastDailyDate === today) { 
-                dailyCredit = parseInt(storedDaily) || 0; 
+            if (lastDailyDate === today) {
+                dailyCredit = parseInt(storedDaily) || 0;
                 if (dailyCredit > 1) dailyCredit = 1;
-            } else { 
+            } else {
                 dailyCredit = 1;
                 localStorage.setItem('screener_daily_credit', '1');
                 localStorage.setItem('screener_last_daily_grant', today);
@@ -856,21 +1012,21 @@
         if (limitCountHeader) limitCountHeader.innerText = total;
     }
     function consumeOneLimit() {
-        if (lifetimeCredit > 0) { 
-            lifetimeCredit--; 
-            localStorage.setItem('screener_lifetime_credits', lifetimeCredit); 
-            if (lifetimeCredit === 0) { 
-                localStorage.setItem('screener_daily_credit', '0'); 
+        if (lifetimeCredit > 0) {
+            lifetimeCredit--;
+            localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
+            if (lifetimeCredit === 0) {
+                localStorage.setItem('screener_daily_credit', '0');
                 dailyCredit = 0;
-            } 
-            updateLimitDisplay(); 
+            }
+            updateLimitDisplay();
             return true;
-        } else if (dailyCredit > 0) { 
-            dailyCredit--; 
-            localStorage.setItem('screener_daily_credit', dailyCredit); 
-            updateLimitDisplay(); 
+        } else if (dailyCredit > 0) {
+            dailyCredit--;
+            localStorage.setItem('screener_daily_credit', dailyCredit);
+            updateLimitDisplay();
             return true;
-        } else { 
+        } else {
             showToast('⚠️ Credit Habis', 'Silakan beli credit atau tunggu daily reset besok.', 'fa-exclamation-triangle', 4000);
             return false;
         }
@@ -878,8 +1034,8 @@
     function addPurchasedCredits(amount) {
         lifetimeCredit += amount;
         localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
-        if (lifetimeCredit > 0) { 
-            dailyCredit = 0; 
+        if (lifetimeCredit > 0) {
+            dailyCredit = 0;
             localStorage.setItem('screener_daily_credit', '0');
         }
         updateLimitDisplay();
@@ -887,7 +1043,7 @@
     }
     initLimitSystem();
 
-    // ========== MODAL PEMBELIAN (tanpa kode unik, harga 9.000) ==========
+    // ========== MODAL PEMBELIAN ==========
     let isProcessingPayment = false;
     const modal = document.getElementById('creditModal');
     const step1Div = document.getElementById('step1');
@@ -902,7 +1058,7 @@
     const jumlahSpan = document.getElementById('jumlahCredit');
     const totalBayarDiv = document.getElementById('totalBayarDisplay');
     let selectedJumlah = 1;
-    
+
     function updateTotalHarga() {
         let subtotal = selectedJumlah * 9000;
         let total = subtotal;
@@ -930,7 +1086,11 @@
         const nama = document.getElementById('namaLengkap')?.value.trim() || '';
         const email = document.getElementById('email')?.value.trim() || '';
         const jumlahBeli = parseInt(jumlahSpan?.innerText || '1');
-        if (!kode || !/^\d+$/.test(kode) || kode.length < 6 || !nama || nama.length < 3 || !email || !email.toLowerCase().endsWith('@gmail.com') || isNaN(jumlahBeli) || jumlahBeli < 1 || jumlahBeli > 10) { showToast('❌ Data Tidak Valid', 'Periksa kembali nomor transaksi, nama, dan email (harus @gmail.com)', 'fa-times-circle', 4000); return; }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!kode || !/^\d+$/.test(kode) || kode.length < 6 || !nama || nama.length < 3 || !email || !emailRegex.test(email) || isNaN(jumlahBeli) || jumlahBeli < 1 || jumlahBeli > 10) {
+            showToast('❌ Data Tidak Valid', 'Periksa kembali nomor transaksi, nama, dan email.', 'fa-times-circle', 4000);
+            return;
+        }
         isProcessingPayment = true;
         confirmBtn.disabled = true;
         addPurchasedCredits(jumlahBeli);
@@ -945,7 +1105,7 @@
         confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Konfirmasi Pembayaran';
     };
 
-    // ========== 15 INDICATORS VOTING (CLASS LENGKAP) ==========
+    // ========== 15 INDICATORS VOTING CLASS ==========
     class FifteenIndicatorsVoting {
         constructor(pairSymbol) {
             this.votes = { buy: 0, sell: 0, neutral: 0 };
@@ -1080,7 +1240,7 @@
             if (pattern.signal === 'bullish') this.addVote('buy', `Bullish: ${pattern.name}`, 0);
             else if (pattern.signal === 'bearish') this.addVote('sell', `Bearish: ${pattern.name}`, 0);
             else this.addVote('neutral', `Pattern: ${pattern.name}`, 0);
-            
+
             const totalAll = this.votes.buy + this.votes.sell + this.votes.neutral;
             const buyPercent = totalAll > 0 ? (this.votes.buy / totalAll) * 100 : 0;
             const sellPercent = totalAll > 0 ? (this.votes.sell / totalAll) * 100 : 0;
@@ -1094,7 +1254,7 @@
                 confidence = Math.min(96, 75 + (buyPercent * 0.25));
                 reason = `SuperTrend & HMA bullish, Aroon Up ${aroonUp.toFixed(1)}`;
                 recommendation = `XAUUSD dalam tren naik kuat. Entry BUY STOP di atas harga (0.12%), SL 0.33%, TP1 0.30%.`;
-            } 
+            }
             else if (this.isXau && strongBearish) {
                 finalDecision = 'SELL';
                 confidence = Math.min(96, 75 + (sellPercent * 0.25));
@@ -1160,7 +1320,7 @@
             };
         }
         addVote(type, reason, value) { this.votes[type]++; this.voteDetails.push({ type, reason, value: typeof value === 'number' ? value.toFixed(5) : value }); }
-        
+
         calculateDynamicEntryLevels(decision, price, atr) {
             if (this.isXau) {
                 const entryPercent = 0.0012, slPercent = 0.0033, tp1Percent = 0.0030, tp2Percent = 0.0060, tp3Percent = 0.0090;
@@ -1202,7 +1362,7 @@
             }
             return { entry: null, stopLoss: null, takeProfits: null, riskReward: null, entryType: 'MARKET' };
         }
-        
+
         calculateEMA(data, period) { const k = 2/(period+1); const ema = [data[0]]; for(let i=1;i<data.length;i++) ema.push(data[i]*k + ema[i-1]*(1-k)); return ema; }
         calculateSMA(data, period) { const sma = []; for(let i=period-1;i<data.length;i++) { const sum = data.slice(i-period+1,i+1).reduce((a,b)=>a+b,0); sma.push(sum/period); } return sma; }
         calculateRSI(data, period) { let gains=0,losses=0; for(let i=1;i<=period;i++){ const ch=data[i]-data[i-1]; if(ch>=0) gains+=ch; else losses-=ch; } let avgGain=gains/period, avgLoss=losses/period, rs=avgGain/avgLoss; const rsi=[100-(100/(1+rs))]; for(let i=period+1;i<data.length;i++){ const ch=data[i]-data[i-1]; if(ch>=0){ avgGain=(avgGain*(period-1)+ch)/period; avgLoss=(avgLoss*(period-1))/period; } else { avgGain=(avgGain*(period-1))/period; avgLoss=(avgLoss*(period-1)-ch)/period; } rs=avgGain/avgLoss; rsi.push(100-(100/(1+rs))); } return rsi; }
@@ -1222,7 +1382,7 @@
         calculateHullMA(data, period) { const halfPeriod = Math.floor(period / 2); const sqrtPeriod = Math.floor(Math.sqrt(period)); const wma = (arr, p) => { const result = []; for (let i = p-1; i < arr.length; i++) { let sum = 0, weightSum = 0; for (let j = 0; j < p; j++) { const weight = j+1; sum += arr[i - j] * weight; weightSum += weight; } result.push(sum / weightSum); } return result; }; const wmaHalf = wma(data, halfPeriod); const wmaFull = wma(data, period); const rawHull = []; const minLen = Math.min(wmaHalf.length, wmaFull.length); for (let i = 0; i < minLen; i++) { rawHull.push(2 * wmaHalf[i] - wmaFull[i]); } const hull = wma(rawHull, sqrtPeriod); const pad = new Array(data.length - hull.length).fill(hull[0] || data[0]); return [...pad, ...hull]; }
     }
 
-    // ========== EVENT HANDLER UNTUK UPLOAD, ANALISIS, RENDER ==========
+    // ========== EVENT HANDLER ==========
     let currentSymbol = null, currentTimeframe = '1h', currentPrice = 0;
     let isProcessing = false;
     const dropzoneDiv = document.getElementById('dropzone');
@@ -1245,46 +1405,142 @@
     if (fileInputElem) fileInputElem.onchange = (e) => { if (e.target.files[0]) processImageWithScan(e.target.files[0]); };
 
     async function processImageWithScan(file) {
-        if (isProcessing) return;
+        if (isProcessing) {
+            showToast('⏳ Sedang Proses', 'Tunggu proses sebelumnya selesai', 'fa-hourglass', 3000);
+            return;
+        }
         isProcessing = true;
+
+        if (previewAreaDiv) previewAreaDiv.style.display = 'block';
+        if (assetDisplayArea) assetDisplayArea.innerHTML = '';
+        if (analyzeBtn) {
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Membaca gambar...';
+        }
+        if (signalCardWrapper) signalCardWrapper.style.display = 'none';
+
+        const safetyTimeout = setTimeout(() => {
+            if (isProcessing) {
+                isProcessing = false;
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
+                }
+                showToast('⏱️ Timeout', 'OCR terlalu lama. Coba gambar lebih kecil/jelas.', 'fa-clock', 5000);
+            }
+        }, 25000);
+
         const reader = new FileReader();
+
         reader.onload = async (ev) => {
             if (previewImgElem) previewImgElem.src = ev.target.result;
-            if (previewAreaDiv) previewAreaDiv.style.display = 'block';
-            if (assetDisplayArea) assetDisplayArea.innerHTML = '';
-            if (analyzeBtn) analyzeBtn.disabled = true;
-            if (signalCardWrapper) signalCardWrapper.style.display = 'none';
+
+            if (previewBox) {
+                const old = previewBox.querySelector('.scan-overlay');
+                if (old) old.remove();
+                const overlay = document.createElement('div');
+                overlay.className = 'scan-overlay';
+                overlay.innerHTML = `<div class="scan-lines"></div><div class="scan-beam"></div><div class="scan-particles"></div><div class="scan-text"><i class="fas fa-microchip"></i> QUANTUM SCANNING & 15 INDICATORS</div>`;
+                previewBox.style.position = 'relative';
+                previewBox.appendChild(overlay);
+                setTimeout(() => { if (overlay && overlay.parentNode) overlay.remove(); }, 3000);
+            }
+
+            let worker = null;
+            let pair = null;
+            let tf = { interval: '1h', display: 'H1' };
+
             try {
-                const worker = await Tesseract.createWorker('eng');
+                console.log('[OCR] Starting Tesseract...');
+                worker = await Tesseract.createWorker('eng');
                 const { data } = await worker.recognize(file);
-                await worker.terminate();
-                let cleanText = data.text.replace(/[^\w\s\/\-]/g, ' ').replace(/\s+/g, ' ');
-                let pair = detectPairFromText(cleanText);
-                if (!pair) { let userInput = prompt("Tidak dapat mendeteksi pair. Masukkan kode pair (contoh: XAUUSD):", "XAUUSD"); if (userInput) pair = userInput.toUpperCase(); }
+
+                const cleanText = (data.text || '').replace(/[^\w\s\/\-]/g, ' ').replace(/\s+/g, ' ');
+                console.log('[OCR] Text:', cleanText);
+
+                pair = detectPairFromText(cleanText);
+                tf = detectTimeframeImproved(cleanText);
+
+                if (!pair) {
+                    console.warn('[OCR] Pair tidak terdeteksi, prompt user');
+                    const userInput = prompt(
+                        "Pair tidak terdeteksi otomatis.\n\nTeks OCR:\n" + cleanText.substring(0, 200) + "\n\nMasukkan pair (contoh: XAUUSD):",
+                        "XAUUSD"
+                    );
+                    if (userInput && userInput.trim()) pair = userInput.trim().toUpperCase();
+                }
+
                 if (!pair) pair = 'XAUUSD';
                 pair = normalizePair(pair);
-                const tf = detectTimeframeImproved(cleanText);
-                currentSymbol = pair;
-                currentTimeframe = tf.interval;
-                if (assetDisplayArea) {
-                    assetDisplayArea.innerHTML = `<div class="info-neon-grid"><div class="neon-card"><div class="neon-icon"><i class="fas fa-chart-line"></i></div><div class="neon-label">Pair</div><div class="neon-value">${pair}</div><div class="neon-badge">Identified</div></div><div class="neon-card"><div class="neon-icon"><i class="fas fa-clock"></i></div><div class="neon-label">Timeframe</div><div class="neon-value">${tf.display}</div><div class="neon-badge">Detected</div></div></div>`;
+
+            } catch (ocrErr) {
+                console.error('[OCR] Gagal:', ocrErr);
+                const userInput = prompt(
+                    "OCR gagal: " + ocrErr.message + "\n\nMasukkan pair manual (contoh: XAUUSD):",
+                    "XAUUSD"
+                );
+                if (userInput && userInput.trim()) {
+                    pair = normalizePair(userInput.trim().toUpperCase());
+                    tf = { interval: '1h', display: 'H1' };
                 }
-                if (analyzeBtn) analyzeBtn.disabled = false;
-            } catch (err) { console.error("OCR Error:", err); alert("Gagal membaca gambar. Silakan coba lagi."); }
+            } finally {
+                if (worker) {
+                    try { await worker.terminate(); } catch(e) { /* ignore */ }
+                }
+            }
+
+            if (!pair) {
+                clearTimeout(safetyTimeout);
+                isProcessing = false;
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = true;
+                    analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
+                }
+                showToast('❌ Dibatalkan', 'Tidak ada pair yang dipilih', 'fa-times-circle', 3000);
+                return;
+            }
+
+            currentSymbol = pair;
+            currentTimeframe = tf.interval;
+
+            if (assetDisplayArea) {
+                assetDisplayArea.innerHTML = `
+                <div class="info-neon-grid">
+                    <div class="neon-card">
+                        <div class="neon-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="neon-label">Pair</div>
+                        <div class="neon-value">${pair}</div>
+                        <div class="neon-badge">Identified</div>
+                    </div>
+                    <div class="neon-card">
+                        <div class="neon-icon"><i class="fas fa-clock"></i></div>
+                        <div class="neon-label">Timeframe</div>
+                        <div class="neon-value">${tf.display}</div>
+                        <div class="neon-badge">Detected</div>
+                    </div>
+                </div>`;
+            }
+
+            clearTimeout(safetyTimeout);
             isProcessing = false;
+            if (analyzeBtn) {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
+            }
+            showToast('✅ Siap Generate', `Pair: ${pair} | TF: ${tf.display}`, 'fa-check-circle', 3000);
         };
-        reader.onerror = () => { isProcessing = false; alert("Gagal baca file"); };
+
+        reader.onerror = () => {
+            clearTimeout(safetyTimeout);
+            isProcessing = false;
+            if (analyzeBtn) {
+                analyzeBtn.disabled = true;
+                analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
+            }
+            showToast('❌ Gagal Baca File', 'File tidak bisa dibaca', 'fa-times-circle', 3000);
+        };
+
         reader.readAsDataURL(file);
-        if (previewBox) {
-            const old = previewBox.querySelector('.scan-overlay');
-            if (old) old.remove();
-            const overlay = document.createElement('div');
-            overlay.className = 'scan-overlay';
-            overlay.innerHTML = `<div class="scan-lines"></div><div class="scan-beam"></div><div class="scan-particles"></div><div class="scan-text"><i class="fas fa-microchip"></i> QUANTUM SCANNING & 15 INDICATORS</div>`;
-            previewBox.style.position = 'relative';
-            previewBox.appendChild(overlay);
-            setTimeout(() => { if (overlay && overlay.parentNode) overlay.remove(); }, 3000);
-        }
     }
 
     function showPremiumLoader() {
@@ -1383,12 +1639,16 @@
                 setTimeout(() => loader.remove(), 400);
                 const tfDisplay = { '1min': 'M1', '5min': 'M5', '15min': 'M15', '30min': 'M30', '1h': 'H1', '4h': 'H4', '1day': 'Daily' }[currentTimeframe] || 'H1';
                 renderSignalOutput(result, currentSymbol, tfDisplay, livePrice, liveTimestamp);
-            } catch (err) { 
-                console.error(err); 
-                clearInterval(interval); 
-                loader.remove(); 
-                alert("Error: " + err.message); 
+            } catch (err) {
+                console.error(err);
+                clearInterval(interval);
+                loader.remove();
+                alert("Error: " + err.message);
                 showToast('❌ Error', err.message, 'fa-exclamation-triangle', 5000);
+                // Refund credit jika gagal
+                lifetimeCredit += 1;
+                localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
+                updateLimitDisplay();
             }
         };
     }
