@@ -589,7 +589,7 @@
             </div>
         </div>
         
-        <footer>© Hunters Group · 15 Indicators (SuperTrend, Aroon, HMA) · Entry XAUUSD 0.12% · SL 0.33% · TP1 0.30% · Real-Time</footer>
+        <footer>© Hunters Group · 15 Indicators + MTF Alignment · Entry 0.08×ATR · SL 1.5×ATR · TP 2.25×/3.5×/5×ATR (XAU) · Real-Time</footer>
     </div>
 </div>
 <div id="creditModal" class="modal-credit"><div class="modal-container"><div id="step1" class="modal-step"><div class="modal-header"><h2><i class="fas fa-gem"></i> Beli Credit</h2><button class="close-modal" id="closeModalBtn"><i class="fas fa-times"></i></button></div><div class="info-harga"><i class="fas fa-tag"></i> Harga per credit: <strong style="color:#00FFAA;">Rp9.000</strong></div><div class="jumlah-control"><button class="jumlah-btn" id="minusCredit"><i class="fas fa-minus"></i></button><span class="jumlah-value" id="jumlahCredit">1</span><button class="jumlah-btn" id="plusCredit"><i class="fas fa-plus"></i></button></div><div class="total-display-modern" id="totalBayarDisplay"></div><div class="qris-area"><img class="qris-img" id="qrisImage" src="https://blogger.googleusercontent.com/img/a/AVvXsEhH0Z6ewE2H7V-Maa0448YScMvF2qjha4Xt6uKlioFSJeUXHSzYesEbB2CsWE1LRdJSN7QxwYW1yGRDN2uyYVY6DtaTfKn_727s9cC2dWr3mNoezeKIFci6rRK6HzbQzCE1DYg8q1F5DWOm9RbypUNB5ipKcIDbXL0GW9d9SRIQ3QePOqw_lcEL4t1Wh_DK" alt="QRIS"><div class="qris-caption" style="font-size:0.7rem; margin-top:8px;">Scan QRIS menggunakan mobile banking atau e-wallet</div></div><button class="btn-action" id="nextToStep2">Lanjut ke Konfirmasi <i class="fas fa-arrow-right"></i></button></div><div id="step2" class="modal-step" style="display: none;"><div class="modal-header"><h2><i class="fas fa-shield-alt"></i> Konfirmasi Pembayaran</h2><button class="close-modal" id="closeModalBtn2"><i class="fas fa-times"></i></button></div><div class="form-group"><label>Nomor Transaksi <span style="color:#F87171;">*</span></label><input type="text" id="kodeTransaksi" placeholder="Contoh: 1234567890"></div><div class="form-group"><label>Nama Lengkap <span style="color:#F87171;">*</span></label><input type="text" id="namaLengkap" placeholder="Contoh: John Doe"></div><div class="form-group"><label>Sumber Dana <span style="color:#F87171;">*</span></label><select id="sumberDana"><option value="BCA">BCA</option><option value="Mandiri">Mandiri</option><option value="BNI">BNI</option><option value="BRI">BRI</option><option value="Dana">Dana</option><option value="OVO">OVO</option><option value="GoPay">GoPay</option><option value="ShopeePay">ShopeePay</option></select></div><div class="form-group"><label>Email Aktif <span style="color:#F87171;">*</span></label><input type="email" id="email" placeholder="email@gmail.com"></div><button class="btn-action" id="confirmPurchaseBtn"><i class="fas fa-check-circle"></i> Konfirmasi Pembayaran</button><button class="btn-action btn-back" id="backToStep1Btn"><i class="fas fa-arrow-left"></i> Kembali</button></div></div></div>
@@ -597,7 +597,9 @@
 <div id="toastContainer" class="toast-container"></div>
 
 <script>
-    // ========== TOAST NOTIFICATION SYSTEM ==========
+    // ============================================================
+    // TOAST NOTIFICATION SYSTEM
+    // ============================================================
     function showToast(title, message, icon = 'fa-gift', duration = 4000) {
         const container = document.getElementById('toastContainer');
         if (!container) return;
@@ -624,20 +626,24 @@
         }, duration);
     }
 
-    // ========== DETEKSI TIMEFRAME ==========
+    // ============================================================
+    // DETEKSI TIMEFRAME LEBIH AGRESIF
+    // ============================================================
     function detectTimeframeImproved(text) {
         const lower = (text || '').toLowerCase();
-        if (/\bd1\b|\b1d\b|\bdaily\b/.test(lower)) return { interval: '1day', display: 'D1' };
-        if (/\bh4\b|\b4h\b|\b4 hour\b/.test(lower)) return { interval: '4h', display: 'H4' };
-        if (/\bh1\b|\b1h\b|\b1 hour\b/.test(lower)) return { interval: '1h', display: 'H1' };
-        if (/\bm30\b|\b30m\b|\b30 min\b/.test(lower)) return { interval: '30min', display: 'M30' };
-        if (/\bm15\b|\b15m\b|\b15 min\b/.test(lower)) return { interval: '15min', display: 'M15' };
-        if (/\bm5\b|\b5m\b|\b5 min\b/.test(lower)) return { interval: '5min', display: 'M5' };
-        if (/\bm1\b|\b1m\b|\b1 min\b/.test(lower)) return { interval: '1min', display: 'M1' };
-        return { interval: '1h', display: 'H1' };
+        if (/\bd1\b|\b1d\b|\bdaily\b|\bday\b/.test(lower)) return { interval: '1day', display: 'D1' };
+        if (/\bh4\b|\b4h\b|\b4\s*hour\b|\b240\b/.test(lower)) return { interval: '4h', display: 'H4' };
+        if (/\bh1\b|\b1h\b|\b1\s*hour\b|\b60\b/.test(lower)) return { interval: '1h', display: 'H1' };
+        if (/\bm30\b|\b30m\b|\b30\s*min\b/.test(lower)) return { interval: '30min', display: 'M30' };
+        if (/\bm15\b|\b15m\b|\b15\s*min\b/.test(lower)) return { interval: '15min', display: 'M15' };
+        if (/\bm5\b|\b5m\b|\b5\s*min\b/.test(lower)) return { interval: '5min', display: 'M5' };
+        if (/\bm1\b|\b1m\b|\b1\s*min\b/.test(lower)) return { interval: '1min', display: 'M1' };
+        return null; // return null agar user diprompt, bukan default H1
     }
 
-    // ========== THREE.JS GLOBE & PARTICLE ==========
+    // ============================================================
+    // THREE.JS GLOBE + PARTICLE
+    // ============================================================
     (function() {
         const container = document.querySelector('.globe-container-3d');
         if (container) {
@@ -654,11 +660,11 @@
             const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(2, 1, 2);
             scene.add(ambient, light);
             let globeActive = true;
-            function animate() { 
+            function animate() {
                 if (!globeActive) return;
-                requestAnimationFrame(animate); 
-                earth.rotation.y += 0.003; 
-                renderer.render(scene, camera); 
+                requestAnimationFrame(animate);
+                earth.rotation.y += 0.003;
+                renderer.render(scene, camera);
             }
             animate();
             document.addEventListener('visibilitychange', () => {
@@ -697,10 +703,10 @@
             draw() { pCtx.beginPath(); pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); pCtx.fillStyle = `rgba(44, 156, 212, ${this.opacity})`; pCtx.fill(); }
         }
         for (let i = 0; i < 100; i++) particles.push(new GlowParticle());
-        function animateParticles() { 
-            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height); 
-            particles.forEach(p => { p.update(); p.draw(); }); 
-            particleAnimId = requestAnimationFrame(animateParticles); 
+        function animateParticles() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            particleAnimId = requestAnimationFrame(animateParticles);
         }
         animateParticles();
         document.addEventListener('visibilitychange', () => {
@@ -713,17 +719,14 @@
         });
     }
 
-    // ========== 1 API KEY UNIFIED ==========
+    // ============================================================
+    // API KEY & FETCH
+    // ============================================================
     const TWELVE_DATA_API_KEY = "8811bc89603a43c89a8263ec702f97bc";
 
-    // ========== FUNGSI DETEKSI PAIR & API ==========
     function normalizePair(pair) {
         if (!pair) return pair;
-        let clean = pair.toUpperCase()
-            .replace(/[._\-][A-Z0-9]*$/, '')
-            .replace(/[M#]$/, '')
-            .replace(/[0-9]+$/, '')
-            .replace(/\s+/g, '');
+        let clean = pair.toUpperCase().replace(/[._\-][A-Z0-9]*$/, '').replace(/[M#]$/, '').replace(/[0-9]+$/, '').replace(/\s+/g, '');
         if (clean.startsWith('XAU') || clean === 'GOLD') return 'XAUUSD';
         if (clean.startsWith('XAG') || clean === 'SILVER') return 'XAGUSD';
         if (clean.startsWith('BTC')) return 'BTCUSD';
@@ -739,46 +742,27 @@
     function detectPairFromText(text) {
         if (!text) return null;
         const upper = text.toUpperCase();
-        const patterns = [
-            /\bXAU\s*USD[M#._]?\b/,
-            /\bXAU[A-Z]{0,3}\b/,
-            /\bGOLD[M#._]?\b/,
-            /\bXAG\s*USD[M#._]?\b/,
-            /\bSILVER[M#._]?\b/,
-            /\bBTC\s*USD[M#._]?\b/,
-            /\bBTC[A-Z]{0,3}\b/,
-            /\bETH\s*USD[M#._]?\b/,
-            /\bETH[A-Z]{0,3}\b/,
-            /\bSOL\s*USD[M#._]?\b/,
-            /\bXRP\s*USD[M#._]?\b/,
-            /\bBNB\s*USD[M#._]?\b/,
-        ];
+        const patterns = [/\bXAU\s*USD[M#._]?\b/, /\bXAU[A-Z]{0,3}\b/, /\bGOLD[M#._]?\b/, /\bXAG\s*USD[M#._]?\b/, /\bSILVER[M#._]?\b/, /\bBTC\s*USD[M#._]?\b/, /\bBTC[A-Z]{0,3}\b/, /\bETH\s*USD[M#._]?\b/, /\bETH[A-Z]{0,3}\b/, /\bSOL\s*USD[M#._]?\b/, /\bXRP\s*USD[M#._]?\b/, /\bBNB\s*USD[M#._]?\b/];
         for (const p of patterns) {
             const m = upper.match(p);
-            if (m) {
-                const raw = m[0].replace(/[M#._]/g, '').replace(/\s/g, '');
-                return normalizePair(raw);
-            }
+            if (m) { const raw = m[0].replace(/[M#._]/g, '').replace(/\s/g, ''); return normalizePair(raw); }
         }
         const forex = upper.match(/\b([A-Z]{3})[\s\/\-]?([A-Z]{3})\b/);
         if (forex) {
             const base = forex[1], quote = forex[2];
             const validCur = ['USD','JPY','GBP','EUR','AUD','CAD','CHF','NZD'];
-            if (validCur.includes(quote) || validCur.includes(base)) {
-                return `${base}/${quote}`;
-            }
+            if (validCur.includes(quote) || validCur.includes(base)) return `${base}/${quote}`;
         }
         return null;
     }
 
-    // ========== HELPER: MULTI-PROXY FETCH ==========
     async function fetchWithProxy(url, options = {}) {
         const proxies = [
-            { name: 'direct',     build: (u) => u },
+            { name: 'direct', build: (u) => u },
             { name: 'allorigins', build: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
-            { name: 'corsproxy',  build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
-            { name: 'cors.eu',    build: (u) => `https://cors.eu.org/${u}` },
-            { name: 'codetabs',   build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+            { name: 'corsproxy', build: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}` },
+            { name: 'cors.eu', build: (u) => `https://cors.eu.org/${u}` },
+            { name: 'codetabs', build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
         ];
         let lastErr = null;
         for (const proxy of proxies) {
@@ -788,20 +772,10 @@
                 const timeoutId = setTimeout(() => controller.abort(), 12000);
                 const res = await fetch(proxyUrl, { ...options, signal: controller.signal });
                 clearTimeout(timeoutId);
-                if (!res.ok) {
-                    lastErr = new Error(`${proxy.name}: HTTP ${res.status}`);
-                    continue;
-                }
+                if (!res.ok) { lastErr = new Error(`${proxy.name}: HTTP ${res.status}`); continue; }
                 const text = await res.text();
-                if (!text || text.trim().startsWith('<')) {
-                    lastErr = new Error(`${proxy.name}: HTML response`);
-                    continue;
-                }
-                let json;
-                try { json = JSON.parse(text); } catch(e) {
-                    lastErr = new Error(`${proxy.name}: invalid JSON`);
-                    continue;
-                }
+                if (!text || text.trim().startsWith('<')) { lastErr = new Error(`${proxy.name}: HTML response`); continue; }
+                let json; try { json = JSON.parse(text); } catch(e) { lastErr = new Error(`${proxy.name}: invalid JSON`); continue; }
                 console.log(`✅ [${proxy.name}] OK`);
                 return { json, proxy: proxy.name };
             } catch(err) {
@@ -813,27 +787,16 @@
         throw lastErr || new Error('Semua proxy gagal');
     }
 
-    // ========== GET REAL-TIME PRICE ==========
     async function getRealTimePrice(symbol) {
-        // Crypto via CoinGecko
-        const cryptoMap = {
-            'BTCUSD': 'bitcoin',
-            'ETHUSD': 'ethereum',
-            'SOLUSD': 'solana',
-            'XRPUSD': 'ripple',
-            'BNBUSD': 'binancecoin'
-        };
+        const cryptoMap = { 'BTCUSD': 'bitcoin', 'ETHUSD': 'ethereum', 'SOLUSD': 'solana', 'XRPUSD': 'ripple', 'BNBUSD': 'binancecoin' };
         if (cryptoMap[symbol]) {
             try {
                 const coinId = cryptoMap[symbol];
                 const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`;
                 const { json } = await fetchWithProxy(url);
-                if (json && json[coinId] && json[coinId].usd) {
-                    return { price: json[coinId].usd, timestamp: new Date().toISOString() };
-                }
+                if (json && json[coinId] && json[coinId].usd) return { price: json[coinId].usd, timestamp: new Date().toISOString() };
             } catch(e) { console.warn("CoinGecko fallback failed:", e.message); }
         }
-
         let apiSymbol = symbol;
         if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
         if (symbol === 'XAGUSD') apiSymbol = 'XAG/USD';
@@ -842,23 +805,14 @@
         if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
         if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
         if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
-
         const url = `https://api.twelvedata.com/quote?symbol=${apiSymbol}&apikey=${TWELVE_DATA_API_KEY}`;
         try {
             const { json } = await fetchWithProxy(url);
-            console.log("Quote Response:", json);
-            if (json && json.last && !json.code && !json.status) {
-                return { price: parseFloat(json.last), timestamp: json.datetime || new Date().toISOString() };
-            }
-            if (json.status === 'error') console.warn("Quote API Error:", json.message);
+            if (json && json.last && !json.code && !json.status) return { price: parseFloat(json.last), timestamp: json.datetime || new Date().toISOString() };
             return null;
-        } catch(err) {
-            console.error("GetRealTimePrice error:", err);
-            return null;
-        }
+        } catch(err) { console.error("GetRealTimePrice error:", err); return null; }
     }
 
-    // ========== FETCH MARKET DATA (Twelve Data + Yahoo fallback) ==========
     async function fetchMarketData(symbol, interval) {
         let apiSymbol = symbol;
         if (symbol === 'XAUUSD') apiSymbol = 'XAU/USD';
@@ -868,30 +822,17 @@
         if (symbol === 'SOLUSD') apiSymbol = 'SOL/USD';
         if (symbol === 'XRPUSD') apiSymbol = 'XRP/USD';
         if (symbol === 'BNBUSD') apiSymbol = 'BNB/USD';
-
-        const output = (interval === '1min' || interval === '5min') ? 100 : 80;
+        const output = (interval === '1min' || interval === '5min') ? 150 : 120;
         const url = `https://api.twelvedata.com/time_series?symbol=${apiSymbol}&interval=${interval}&outputsize=${output}&apikey=${TWELVE_DATA_API_KEY}`;
-
-        console.log("Fetching Twelve Data:", url);
-
         try {
             const { json, proxy } = await fetchWithProxy(url);
-            console.log(`[${proxy}] Response:`, json);
-
             if (json.status === 'error' || json.code) {
-                const msg = json.message || `Code ${json.code}`;
-                // 404/429 → jangan coba Yahoo dulu, karena mungkin salah symbol
-                if (json.code === 404) throw new Error(`Symbol ${apiSymbol} tidak ditemukan di Twelve Data`);
-                if (json.code === 429) throw new Error(`Twelve Data rate limit: ${msg}`);
-                throw new Error(`API Error: ${msg}`);
+                if (json.code === 404) throw new Error(`Symbol ${apiSymbol} tidak ditemukan`);
+                if (json.code === 429) throw new Error(`Rate limit: ${json.message}`);
+                throw new Error(`API Error: ${json.message || json.code}`);
             }
-
-            if (!json.values || !Array.isArray(json.values) || json.values.length < 20) {
-                throw new Error(`Data tidak mencukupi: ${json?.values?.length || 0} bars`);
-            }
-
+            if (!json.values || !Array.isArray(json.values) || json.values.length < 30) throw new Error(`Data tidak mencukupi: ${json?.values?.length || 0} bars`);
             const values = json.values.reverse();
-            console.log(`✅ Twelve Data OK: ${values.length} bars`);
             return {
                 highs: values.map(v => parseFloat(v.high)),
                 lows: values.map(v => parseFloat(v.low)),
@@ -900,16 +841,12 @@
                 currentPrice: parseFloat(values[values.length - 1].close)
             };
         } catch(tdErr) {
-            console.warn("Twelve Data gagal:", tdErr.message, "→ Fallback ke Yahoo Finance...");
-            try {
-                return await fetchFromYahoo(symbol, interval);
-            } catch(yahooErr) {
-                throw new Error(`Twelve Data: ${tdErr.message} | Yahoo: ${yahooErr.message}`);
-            }
+            console.warn("Twelve Data gagal:", tdErr.message, "→ Yahoo fallback");
+            try { return await fetchFromYahoo(symbol, interval); }
+            catch(yahooErr) { throw new Error(`Twelve: ${tdErr.message} | Yahoo: ${yahooErr.message}`); }
         }
     }
 
-    // ========== YAHOO FINANCE FALLBACK ==========
     async function fetchFromYahoo(symbol, interval) {
         let yahooSymbol = symbol;
         if (symbol === 'XAUUSD') yahooSymbol = 'GC=F';
@@ -920,54 +857,28 @@
         if (symbol === 'XRPUSD') yahooSymbol = 'XRP-USD';
         if (symbol === 'BNBUSD') yahooSymbol = 'BNB-USD';
         if (symbol.includes('/')) yahooSymbol = symbol.replace('/', '') + '=X';
-
-        const intervalMap = {
-            '1min': '1m', '5min': '5m', '15min': '15m', '30min': '30m',
-            '1h': '1h', '4h': '1h', '1day': '1d'
-        };
+        const intervalMap = { '1min': '1m', '5min': '5m', '15min': '15m', '30min': '30m', '1h': '1h', '4h': '1h', '1day': '1d' };
         const yInterval = intervalMap[interval] || '1h';
-
-        const rangeMap = {
-            '1m': '5d', '5m': '1mo', '15m': '1mo', '30m': '3mo',
-            '1h': '3mo', '1d': '1y'
-        };
+        const rangeMap = { '1m': '5d', '5m': '1mo', '15m': '1mo', '30m': '3mo', '1h': '3mo', '1d': '1y' };
         const range = rangeMap[yInterval] || '3mo';
-
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${yInterval}&range=${range}`;
-        console.log("Fetching Yahoo:", url);
-
-        const { json, proxy } = await fetchWithProxy(url);
-        console.log(`[${proxy}] Yahoo Response:`, json);
-
+        const { json } = await fetchWithProxy(url);
         const result = json?.chart?.result?.[0];
-        if (!result || !result.timestamp) {
-            throw new Error('Yahoo: tidak ada data chart');
-        }
-
+        if (!result || !result.timestamp) throw new Error('Yahoo: tidak ada data chart');
         const q = result.indicators.quote[0];
         const highs = [], lows = [], closes = [], volumes = [];
         for (let i = 0; i < result.timestamp.length; i++) {
             if (q.high[i] != null && q.low[i] != null && q.close[i] != null) {
-                highs.push(q.high[i]);
-                lows.push(q.low[i]);
-                closes.push(q.close[i]);
-                volumes.push(q.volume ? q.volume[i] : null);
+                highs.push(q.high[i]); lows.push(q.low[i]); closes.push(q.close[i]); volumes.push(q.volume ? q.volume[i] : null);
             }
         }
-
-        if (closes.length < 20) {
-            throw new Error(`Yahoo: hanya ${closes.length} bars`);
-        }
-
-        console.log(`✅ Yahoo OK: ${closes.length} bars`);
-        return {
-            highs, lows, closes,
-            volumes: volumes.some(v => v !== null) ? volumes : null,
-            currentPrice: closes[closes.length - 1]
-        };
+        if (closes.length < 30) throw new Error(`Yahoo: hanya ${closes.length} bars`);
+        return { highs, lows, closes, volumes: volumes.some(v => v !== null) ? volumes : null, currentPrice: closes[closes.length - 1] };
     }
 
-    // ========== CREDIT SYSTEM ==========
+    // ============================================================
+    // CREDIT SYSTEM
+    // ============================================================
     let lifetimeCredit = 0, dailyCredit = 0;
     function initLimitSystem() {
         let storedLifetime = localStorage.getItem('screener_lifetime_credits');
@@ -976,9 +887,7 @@
             lifetimeCredit = 1;
             localStorage.setItem('screener_lifetime_credits', '1');
             showToast('🎉 Selamat Datang!', 'Anda mendapatkan 1 credit gratis sebagai pengguna baru.', 'fa-gem', 5000);
-        } else {
-            lifetimeCredit = parseInt(storedLifetime) || 0;
-        }
+        } else { lifetimeCredit = parseInt(storedLifetime) || 0; }
         let lastDailyDate = localStorage.getItem('screener_last_daily_grant');
         let today = new Date().toDateString();
         if (lifetimeCredit > 0) {
@@ -1015,10 +924,7 @@
         if (lifetimeCredit > 0) {
             lifetimeCredit--;
             localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
-            if (lifetimeCredit === 0) {
-                localStorage.setItem('screener_daily_credit', '0');
-                dailyCredit = 0;
-            }
+            if (lifetimeCredit === 0) { localStorage.setItem('screener_daily_credit', '0'); dailyCredit = 0; }
             updateLimitDisplay();
             return true;
         } else if (dailyCredit > 0) {
@@ -1034,16 +940,15 @@
     function addPurchasedCredits(amount) {
         lifetimeCredit += amount;
         localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
-        if (lifetimeCredit > 0) {
-            dailyCredit = 0;
-            localStorage.setItem('screener_daily_credit', '0');
-        }
+        if (lifetimeCredit > 0) { dailyCredit = 0; localStorage.setItem('screener_daily_credit', '0'); }
         updateLimitDisplay();
-        showToast('✅ Pembayaran Berhasil', `+${amount} credit telah ditambahkan. Total credit: ${lifetimeCredit + dailyCredit}`, 'fa-check-circle', 5000);
+        showToast('✅ Pembayaran Berhasil', `+${amount} credit ditambahkan.`, 'fa-check-circle', 5000);
     }
     initLimitSystem();
 
-    // ========== MODAL PEMBELIAN ==========
+    // ============================================================
+    // MODAL PEMBELIAN
+    // ============================================================
     let isProcessingPayment = false;
     const modal = document.getElementById('creditModal');
     const step1Div = document.getElementById('step1');
@@ -1058,11 +963,9 @@
     const jumlahSpan = document.getElementById('jumlahCredit');
     const totalBayarDiv = document.getElementById('totalBayarDisplay');
     let selectedJumlah = 1;
-
     function updateTotalHarga() {
         let subtotal = selectedJumlah * 9000;
-        let total = subtotal;
-        totalBayarDiv.innerHTML = `<div class="total-row"><span>Subtotal (${selectedJumlah} x Rp9.000)</span><span>Rp${subtotal.toLocaleString('id-ID')}</span></div><div class="total-row"><span>Total Pembayaran</span><span style="color:#00FFAA;">Rp${total.toLocaleString('id-ID')}</span></div>`;
+        totalBayarDiv.innerHTML = `<div class="total-row"><span>Subtotal (${selectedJumlah} x Rp9.000)</span><span>Rp${subtotal.toLocaleString('id-ID')}</span></div><div class="total-row"><span>Total Pembayaran</span><span style="color:#00FFAA;">Rp${subtotal.toLocaleString('id-ID')}</span></div>`;
     }
     function syncJumlah() { jumlahSpan.innerText = selectedJumlah; updateTotalHarga(); }
     if (minusBtn) minusBtn.onclick = () => { if (selectedJumlah > 1) { selectedJumlah--; syncJumlah(); } };
@@ -1105,284 +1008,434 @@
         confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Konfirmasi Pembayaran';
     };
 
-    // ========== 15 INDICATORS VOTING CLASS ==========
-    class FifteenIndicatorsVoting {
+    // ============================================================
+    // MESIN ANALISIS — WEIGHTED MULTI-TIMEFRAME
+    // ============================================================
+    class AdvancedTradingEngine {
         constructor(pairSymbol) {
-            this.votes = { buy: 0, sell: 0, neutral: 0 };
-            this.voteDetails = [];
+            this.pair = pairSymbol;
             const upper = (pairSymbol || '').toUpperCase();
             this.isCrypto = (upper === 'BTCUSD' || upper === 'ETHUSD' || upper === 'SOLUSD' || upper === 'XRPUSD' || upper === 'BNBUSD');
             this.isXau = (upper === 'XAUUSD');
-            this.rsiPeriod = 14;
-            this.stochPeriod = 14;
-            this.bbStdDev = 2;
-            this.adxStrongThreshold = 25;
-            this.cciPeriod = 20;
-            this.mfiPeriod = 14;
-            this.willrPeriod = 14;
-            this.superTrendPeriod = 10;
-            this.superTrendMultiplier = 3;
-            this.aroonPeriod = 25;
-            this.hullPeriod = 20;
-        }
-        analyze(highs, lows, closes, volumes) {
-            const currentPrice = closes[closes.length - 1];
+            this.isXag = (upper === 'XAGUSD');
+            this.isForex = upper.includes('/');
             this.votes = { buy: 0, sell: 0, neutral: 0 };
+            this.weightedBuy = 0;
+            this.weightedSell = 0;
             this.voteDetails = [];
-            const atrValues = this.calculateATR(highs, lows, closes, 14);
-            const latestAtr = atrValues[atrValues.length-1] || 0;
-            const superTrend = this.calculateSuperTrend(highs, lows, closes, this.superTrendPeriod, this.superTrendMultiplier);
-            const st = superTrend[superTrend.length-1];
-            const stDirection = superTrend.direction ? superTrend.direction[superTrend.direction.length-1] : (currentPrice > st ? 'up' : 'down');
-            if (stDirection === 'up') this.addVote('buy', `SuperTrend bullish`, st);
-            else if (stDirection === 'down') this.addVote('sell', `SuperTrend bearish`, st);
-            else this.addVote('neutral', `SuperTrend flat`, st);
-            const aroon = this.calculateAroon(highs, lows, this.aroonPeriod);
-            const aroonUp = aroon.up[aroon.up.length-1];
-            const aroonDown = aroon.down[aroon.down.length-1];
-            if (aroonUp > 70 && aroonUp > aroonDown) this.addVote('buy', `Aroon Up kuat (${aroonUp.toFixed(1)})`, aroonUp);
-            else if (aroonDown > 70 && aroonDown > aroonUp) this.addVote('sell', `Aroon Down kuat (${aroonDown.toFixed(1)})`, aroonDown);
-            else if (aroonUp > aroonDown) this.addVote('buy', `Aroon Up > Down`, aroonUp);
-            else if (aroonDown > aroonUp) this.addVote('sell', `Aroon Down > Up`, aroonDown);
-            else this.addVote('neutral', `Aroon netral`, 0);
-            const hma = this.calculateHullMA(closes, this.hullPeriod);
-            const lastHma = hma[hma.length-1];
-            if (currentPrice > lastHma) this.addVote('buy', `HMA bullish`, lastHma);
-            else if (currentPrice < lastHma) this.addVote('sell', `HMA bearish`, lastHma);
-            else this.addVote('neutral', `HMA neutral`, lastHma);
-            const psar = this.calculatePSAR(highs, lows, 0.02, 0.2);
-            const sar = psar[psar.length-1];
-            if (currentPrice > sar) this.addVote('buy', 'PSAR below price (uptrend)', sar);
-            else if (currentPrice < sar) this.addVote('sell', 'PSAR above price (downtrend)', sar);
-            else this.addVote('neutral', 'PSAR at price', sar);
-            const adxData = this.calculateADX(highs, lows, closes, 14);
-            const adxVal = adxData.adx[adxData.adx.length-1];
-            const plusDI = adxData.plusDI[adxData.plusDI.length-1];
-            const minusDI = adxData.minusDI[adxData.minusDI.length-1];
-            if (adxVal > 25 && plusDI > minusDI) this.addVote('buy', `Strong uptrend (ADX ${adxVal.toFixed(1)})`, adxVal);
-            else if (adxVal > 25 && minusDI > plusDI) this.addVote('sell', `Strong downtrend (ADX ${adxVal.toFixed(1)})`, adxVal);
-            else this.addVote('neutral', `Weak trend (ADX ${adxVal.toFixed(1)})`, adxVal);
-            if (volumes && volumes.length > 20) {
-                const volSignal = this.analyzeVolume(volumes, closes);
-                if (volSignal.signal === 'bullish') this.addVote('buy', 'Volume surge bullish', volSignal.ratio);
-                else if (volSignal.signal === 'bearish') this.addVote('sell', 'Volume surge bearish', volSignal.ratio);
-                else this.addVote('neutral', 'Volume normal', volSignal.ratio);
-            } else this.addVote('neutral', 'Volume data not available', 0);
-            const recentHighs = highs.slice(-30);
-            const recentLows = lows.slice(-30);
-            const resistance = Math.max(...recentHighs.slice(0, -1));
-            const support = Math.min(...recentLows.slice(0, -1));
-            const breakoutUp = currentPrice > resistance;
-            const breakoutDown = currentPrice < support;
-            if (breakoutUp) this.addVote('buy', 'Breakout above resistance', resistance);
-            else if (breakoutDown) this.addVote('sell', 'Breakdown below support', support);
-            else this.addVote('neutral', 'No breakout S/R', currentPrice);
-            const bb = this.calculateBollingerBands(closes, 20, this.bbStdDev);
-            const upperBB = bb.upper[bb.upper.length-1], lowerBB = bb.lower[bb.lower.length-1];
-            if (currentPrice > upperBB) this.addVote('buy', 'Breakout above upper BB', currentPrice);
-            else if (currentPrice < lowerBB) this.addVote('sell', 'Breakdown below lower BB', currentPrice);
-            else this.addVote('neutral', 'Price inside BB range', currentPrice);
-            const macd = this.calculateMACD(closes, 12, 26, 9);
-            const macdLine = macd.macd[macd.macd.length-1];
-            const signalLine = macd.signal[macd.signal.length-1];
-            const hist = macdLine - signalLine;
-            if (hist > 0 && macdLine > signalLine) this.addVote('buy', 'MACD bullish', hist);
-            else if (hist < 0 && macdLine < signalLine) this.addVote('sell', 'MACD bearish', hist);
-            else this.addVote('neutral', 'MACD flat', hist);
-            const rsi = this.calculateRSI(closes, this.rsiPeriod);
-            const r = rsi[rsi.length-1];
-            const isBullishTrend = (stDirection === 'up' && currentPrice > lastHma);
-            const isBearishTrend = (stDirection === 'down' && currentPrice < lastHma);
-            if (this.isXau && isBullishTrend && r > 70) this.addVote('neutral', `RSI overbought but strong uptrend`, r);
-            else if (this.isXau && isBearishTrend && r < 30) this.addVote('neutral', `RSI oversold but strong downtrend`, r);
-            else {
-                if (r < 30) this.addVote('buy', `RSI oversold (${r.toFixed(1)})`, r);
-                else if (r > 70) this.addVote('sell', `RSI overbought (${r.toFixed(1)})`, r);
-                else if (r < 45) this.addVote('sell', `RSI bearish zone (${r.toFixed(1)})`, r);
-                else if (r > 55) this.addVote('buy', `RSI bullish zone (${r.toFixed(1)})`, r);
-                else this.addVote('neutral', `RSI neutral (${r.toFixed(1)})`, r);
-            }
-            const stoch = this.calculateStochastic(highs, lows, closes, this.stochPeriod, 3);
-            const k = stoch.k[stoch.k.length-1];
-            if (this.isXau && isBullishTrend && k > 80) this.addVote('neutral', `Stochastic overbought but uptrend`, k);
-            else if (this.isXau && isBearishTrend && k < 20) this.addVote('neutral', `Stochastic oversold but downtrend`, k);
-            else {
-                if (k < 20) this.addVote('buy', `Stochastic oversold (${k.toFixed(1)})`, k);
-                else if (k > 80) this.addVote('sell', `Stochastic overbought (${k.toFixed(1)})`, k);
-                else this.addVote('neutral', `Stochastic neutral (${k.toFixed(1)})`, k);
-            }
-            const cci = this.calculateCCI(highs, lows, closes, this.cciPeriod);
-            const cciVal = cci[cci.length-1];
-            if (cciVal > 100) this.addVote('buy', `CCI bullish (>100)`, cciVal);
-            else if (cciVal < -100) this.addVote('sell', `CCI bearish (<-100)`, cciVal);
-            else if (cciVal > 0) this.addVote('buy', `CCI positive`, cciVal);
-            else this.addVote('sell', `CCI negative`, cciVal);
-            const willR = this.calculateWilliamsR(highs, lows, closes, this.willrPeriod);
-            const w = willR[willR.length-1];
-            if (w < -80) this.addVote('buy', `Williams %R oversold (${w.toFixed(1)})`, w);
-            else if (w > -20) this.addVote('sell', `Williams %R overbought (${w.toFixed(1)})`, w);
-            else if (w < -50) this.addVote('buy', `Williams %R bearish zone`, w);
-            else this.addVote('sell', `Williams %R bullish zone`, w);
-            if (volumes && volumes.length > this.mfiPeriod) {
-                const mfi = this.calculateMFI(highs, lows, closes, volumes, this.mfiPeriod);
-                const mfiVal = mfi[mfi.length-1];
-                if (mfiVal < 20) this.addVote('buy', `MFI oversold (${mfiVal.toFixed(1)})`, mfiVal);
-                else if (mfiVal > 80) this.addVote('sell', `MFI overbought (${mfiVal.toFixed(1)})`, mfiVal);
-                else if (mfiVal > 60) this.addVote('buy', `MFI bullish (${mfiVal.toFixed(1)})`, mfiVal);
-                else if (mfiVal < 40) this.addVote('sell', `MFI bearish (${mfiVal.toFixed(1)})`, mfiVal);
-                else this.addVote('neutral', `MFI neutral`, mfiVal);
-            } else this.addVote('neutral', 'MFI data insufficient', 0);
-            const avgAtr = atrValues.slice(-20).reduce((a,b)=>a+b,0)/Math.min(20, atrValues.length);
-            if (latestAtr > avgAtr * 1.3) this.addVote('buy', `High volatility - breakout likely`, latestAtr);
-            else if (latestAtr < avgAtr * 0.8) this.addVote('neutral', `Low volatility - wait`, latestAtr);
-            else this.addVote('neutral', `Normal volatility`, latestAtr);
-            const pattern = this.identifyCandlePattern(highs, lows, closes);
-            if (pattern.signal === 'bullish') this.addVote('buy', `Bullish: ${pattern.name}`, 0);
-            else if (pattern.signal === 'bearish') this.addVote('sell', `Bearish: ${pattern.name}`, 0);
-            else this.addVote('neutral', `Pattern: ${pattern.name}`, 0);
+        }
 
-            const totalAll = this.votes.buy + this.votes.sell + this.votes.neutral;
-            const buyPercent = totalAll > 0 ? (this.votes.buy / totalAll) * 100 : 0;
-            const sellPercent = totalAll > 0 ? (this.votes.sell / totalAll) * 100 : 0;
-            const totalValid = this.votes.buy + this.votes.sell;
+        // ---------- HELPERS INDIKATOR ----------
+        ema(data, period) { const k = 2/(period+1); const out = [data[0]]; for(let i=1;i<data.length;i++) out.push(data[i]*k + out[i-1]*(1-k)); return out; }
+        sma(data, period) { const out = []; for(let i=period-1;i<data.length;i++){ const s = data.slice(i-period+1,i+1).reduce((a,b)=>a+b,0); out.push(s/period);} return out; }
+        atr(highs, lows, closes, period=14) {
+            const tr = [];
+            for(let i=1;i<highs.length;i++) tr.push(Math.max(highs[i]-lows[i], Math.abs(highs[i]-closes[i-1]), Math.abs(lows[i]-closes[i-1])));
+            return this.ema(tr, period);
+        }
+        rsi(data, period=14) {
+            let g=0,l=0; for(let i=1;i<=period;i++){ const c=data[i]-data[i-1]; if(c>=0)g+=c; else l-=c; }
+            let ag=g/period, al=l/period; const out=[100-(100/(1+ag/(al||1)))];
+            for(let i=period+1;i<data.length;i++){ const c=data[i]-data[i-1]; if(c>=0){ag=(ag*(period-1)+c)/period; al=(al*(period-1))/period;} else {ag=(ag*(period-1))/period; al=(al*(period-1)-c)/period;} out.push(100-(100/(1+ag/(al||1)))); }
+            return out;
+        }
+        macd(data, fast=12, slow=26, sig=9) { const ef=this.ema(data,fast), es=this.ema(data,slow); const line=ef.map((v,i)=>v-es[i]); return { macd: line, signal: this.ema(line, sig) }; }
+        bollinger(data, period=20, mult=2) {
+            const mid=[],up=[],lo=[];
+            for(let i=period-1;i<data.length;i++){ const w=data.slice(i-period+1,i+1); const m=w.reduce((a,b)=>a+b,0)/period; const v=w.map(x=>Math.pow(x-m,2)).reduce((a,b)=>a+b,0)/period; const sd=Math.sqrt(v); mid.push(m); up.push(m+mult*sd); lo.push(m-mult*sd); }
+            return { middle: mid, upper: up, lower: lo };
+        }
+        stochastic(highs, lows, closes, period=14) {
+            const out=[];
+            for(let i=period-1;i<closes.length;i++){ const h=Math.max(...highs.slice(i-period+1,i+1)); const l=Math.min(...lows.slice(i-period+1,i+1)); out.push(((closes[i]-l)/(h-l||1))*100); }
+            return out;
+        }
+        psar(highs, lows, step=0.02, maxStep=0.2) {
+            const out=[]; let trend=1, ep=highs[0], af=step, sar=lows[0]; out.push(sar);
+            for(let i=1;i<highs.length;i++){ let prev=out[i-1]; if(trend===1){ sar=prev+af*(ep-prev); if(i>=2 && sar>lows[i-2]) sar=lows[i-2]; if(sar>lows[i-1]) sar=lows[i-1]; if(sar>lows[i]){ trend=-1; sar=ep; af=step; ep=lows[i]; } else if(highs[i]>ep){ ep=highs[i]; af=Math.min(af+step,maxStep); } } else { sar=prev+af*(ep-prev); if(i>=2 && sar<highs[i-2]) sar=highs[i-2]; if(sar<highs[i-1]) sar=highs[i-1]; if(sar<highs[i]){ trend=1; sar=ep; af=step; ep=highs[i]; } else if(lows[i]<ep){ ep=lows[i]; af=Math.min(af+step,maxStep); } } out.push(sar); }
+            return out;
+        }
+        adx(highs, lows, closes, period=14) {
+            const tr=[], pDM=[], mDM=[];
+            for(let i=1;i<highs.length;i++){ tr.push(Math.max(highs[i]-lows[i], Math.abs(highs[i]-closes[i-1]), Math.abs(lows[i]-closes[i-1]))); const up=highs[i]-highs[i-1], dn=lows[i-1]-lows[i]; pDM.push((up>dn&&up>0)?up:0); mDM.push((dn>up&&dn>0)?dn:0); }
+            const sTR=this.ema(tr,period), sPDM=this.ema(pDM,period), sMDM=this.ema(mDM,period);
+            const pDI=sPDM.map((v,i)=>v/(sTR[i]||1)*100), mDI=sMDM.map((v,i)=>v/(sTR[i]||1)*100);
+            const dx=pDI.map((v,i)=> (v+mDI[i])===0?0:Math.abs(v-mDI[i])/(v+mDI[i])*100);
+            return { adx: this.ema(dx,period), plusDI: pDI, minusDI: mDI };
+        }
+        superTrend(highs, lows, closes, period=10, mult=3) {
+            const a=this.atr(highs,lows,closes,period);
+            const up=[],lo=[],trend=[];
+            for(let i=0;i<closes.length;i++){ const hl=(highs[i]+lows[i])/2; const bu=hl+mult*a[i]; const bl=hl-mult*a[i]; if(i===0){ up.push(bu); lo.push(bl); trend.push(1);} else { const nu = bu<up[i-1]?bu:up[i-1]; const nl = bl>lo[i-1]?bl:lo[i-1]; up.push(nu); lo.push(nl); let t=trend[i-1]; if(t===1&&closes[i]<=nl) t=-1; else if(t===-1&&closes[i]>=nu) t=1; trend.push(t);} }
+            const st = closes.map((_,i)=> trend[i]===1 ? lo[i] : up[i]);
+            st.direction = trend.map(t=>t===1?'up':'down');
+            return st;
+        }
+        aroon(highs, lows, period=25) {
+            const up=[],dn=[];
+            for(let i=period-1;i<highs.length;i++){ const sh=highs.slice(i-period+1,i+1); const sl=lows.slice(i-period+1,i+1); const hi=sh.indexOf(Math.max(...sh)); const li=sl.indexOf(Math.min(...sl)); up.push(((period-1-hi)/(period-1))*100); dn.push(((period-1-li)/(period-1))*100); }
+            return { up, down: dn };
+        }
+        hma(data, period=20) {
+            const half=Math.floor(period/2), sq=Math.floor(Math.sqrt(period));
+            const wma=(arr,p)=>{ const r=[]; for(let i=p-1;i<arr.length;i++){ let s=0,w=0; for(let j=0;j<p;j++){ const wt=j+1; s+=arr[i-j]*wt; w+=wt; } r.push(s/w); } return r; };
+            const wh=wma(data,half), wf=wma(data,period);
+            const minLen=Math.min(wh.length,wf.length);
+            const raw=[]; for(let i=0;i<minLen;i++) raw.push(2*wh[i]-wf[i]);
+            const hull = wma(raw,sq);
+            const pad = new Array(data.length - hull.length).fill(hull[0] || data[0]);
+            return [...pad, ...hull];
+        }
+        cci(highs, lows, closes, period=20) {
+            const tp = highs.map((h,i)=>(h+lows[i]+closes[i])/3);
+            const sm = this.sma(tp, period);
+            const out=[];
+            for(let i=0;i<sm.length;i++){
+                const slice = tp.slice(i, i+period);
+                const mean = sm[i];
+                const mad = slice.reduce((a,v)=>a+Math.abs(v-mean),0)/period;
+                out.push(mad===0?0:(tp[i+period-1]-mean)/(0.015*mad));
+            }
+            return out;
+        }
+        williamsR(highs, lows, closes, period=14) {
+            const out=[];
+            for(let i=period-1;i<closes.length;i++){ const h=Math.max(...highs.slice(i-period+1,i+1)); const l=Math.min(...lows.slice(i-period+1,i+1)); out.push(((h-closes[i])/(h-l||1))*-100); }
+            return out;
+        }
+        mfi(highs, lows, closes, volumes, period=14) {
+            const tp = highs.map((h,i)=>(h+lows[i]+closes[i])/3);
+            const rmf = tp.map((t,i)=> t*(volumes[i]||0));
+            const out=[];
+            for(let i=period;i<tp.length;i++){
+                let pos=0,neg=0;
+                for(let j=i-period+1;j<=i;j++){ if(tp[j]>tp[j-1]) pos+=rmf[j]; else if(tp[j]<tp[j-1]) neg+=rmf[j]; }
+                const ratio = neg===0?100:pos/neg;
+                out.push(100-(100/(1+ratio)));
+            }
+            return out;
+        }
+        candlePattern(highs, lows, closes) {
+            if(closes.length<3) return { name:'Unknown', signal:'neutral' };
+            const c=closes[closes.length-1], o=closes[closes.length-2], h=highs[highs.length-1], l=lows[highs.length-1], pc=closes[closes.length-3];
+            const body=Math.abs(c-o), range=h-l, lw=Math.min(c,o)-l, uw=h-Math.max(c,o);
+            if(body<range*0.3 && lw>body*2 && c>o) return { name:'Hammer', signal:'bullish' };
+            if(body<range*0.3 && uw>body*2 && c<o) return { name:'Shooting Star', signal:'bearish' };
+            if(c>o && o<pc && c>pc) return { name:'Bullish Engulfing', signal:'bullish' };
+            if(c<o && o>pc && c<pc) return { name:'Bearish Engulfing', signal:'bearish' };
+            if(body<range*0.1) return { name:'Doji', signal:'neutral' };
+            return { name:'No Pattern', signal:'neutral' };
+        }
+
+        // ---------- WEIGHTED VOTE ----------
+        addWeightedVote(type, reason, value, weight=1) {
+            if (type === 'buy') this.weightedBuy += weight;
+            else if (type === 'sell') this.weightedSell += weight;
+            this.votes[type]++;
+            this.voteDetails.push({ type, reason, value: typeof value === 'number' ? value.toFixed(5) : value, weight });
+        }
+
+        // ---------- ANALISIS UTAMA ----------
+        analyze(highs, lows, closes, volumes) {
+            const price = closes[closes.length - 1];
+            this.votes = { buy: 0, sell: 0, neutral: 0 };
+            this.weightedBuy = 0;
+            this.weightedSell = 0;
+            this.voteDetails = [];
+
+            const atrSeries = this.atr(highs, lows, closes, 14);
+            const latestAtr = atrSeries[atrSeries.length-1] || 0;
+            const st = this.superTrend(highs, lows, closes, 10, 3);
+            const stDir = st.direction[st.direction.length-1];
+            const adxData = this.adx(highs, lows, closes, 14);
+            const adxVal = adxData.adx[adxData.adx.length-1] || 0;
+            const pDI = adxData.plusDI[adxData.plusDI.length-1] || 0;
+            const mDI = adxData.minusDI[adxData.minusDI.length-1] || 0;
+            const hmaSeries = this.hma(closes, 20);
+            const lastHma = hmaSeries[hmaSeries.length-1];
+            const aroonData = this.aroon(highs, lows, 25);
+            const aroonUp = aroonData.up[aroonData.up.length-1] || 0;
+            const aroonDn = aroonData.down[aroonData.down.length-1] || 0;
+
+            // FILTER RANGING
+            const isRanging = adxVal < 18;
+            const isTrending = adxVal >= 25;
+            const isTrendWeak = adxVal >= 18 && adxVal < 25;
+
+            // WEIGHTED VOTING
+            if (stDir === 'up') this.addWeightedVote('buy', `SuperTrend bullish`, st[st.length-1], 2);
+            else this.addWeightedVote('sell', `SuperTrend bearish`, st[st.length-1], 2);
+
+            if (price > lastHma) this.addWeightedVote('buy', `Price > HMA`, lastHma, 2);
+            else this.addWeightedVote('sell', `Price < HMA`, lastHma, 2);
+
+            if (aroonUp > aroonDn && aroonUp > 60) this.addWeightedVote('buy', `Aroon Up dominant (${aroonUp.toFixed(0)})`, aroonUp, 2);
+            else if (aroonDn > aroonUp && aroonDn > 60) this.addWeightedVote('sell', `Aroon Down dominant (${aroonDn.toFixed(0)})`, aroonDn, 2);
+            else this.addWeightedVote('neutral', `Aroon unclear`, 0, 1);
+
+            if (isTrending && pDI > mDI) this.addWeightedVote('buy', `ADX ${adxVal.toFixed(0)} + DI+>DI-`, adxVal, 2);
+            else if (isTrending && mDI > pDI) this.addWeightedVote('sell', `ADX ${adxVal.toFixed(0)} + DI->DI+`, adxVal, 2);
+            else this.addWeightedVote('neutral', `ADX ${adxVal.toFixed(0)} lemah/ranging`, adxVal, 1);
+
+            const sar = this.psar(highs, lows);
+            if (price > sar[sar.length-1]) this.addWeightedVote('buy', 'PSAR below', sar[sar.length-1], 1);
+            else this.addWeightedVote('sell', 'PSAR above', sar[sar.length-1], 1);
+
+            const md = this.macd(closes, 12, 26, 9);
+            const macdL = md.macd[md.macd.length-1], sigL = md.signal[md.signal.length-1];
+            if (macdL > sigL) this.addWeightedVote('buy', 'MACD bullish cross', macdL-sigL, 1);
+            else this.addWeightedVote('sell', 'MACD bearish cross', macdL-sigL, 1);
+
+            const rsiV = this.rsi(closes, 14);
+            const r = rsiV[rsiV.length-1];
+            if (stDir === 'up' && r > 70) this.addWeightedVote('neutral', `RSI ${r.toFixed(0)} OB (trend up)`, r, 1);
+            else if (stDir === 'down' && r < 30) this.addWeightedVote('neutral', `RSI ${r.toFixed(0)} OS (trend down)`, r, 1);
+            else if (r > 55) this.addWeightedVote('buy', `RSI ${r.toFixed(0)} bullish`, r, 1);
+            else if (r < 45) this.addWeightedVote('sell', `RSI ${r.toFixed(0)} bearish`, r, 1);
+            else this.addWeightedVote('neutral', `RSI ${r.toFixed(0)} neutral`, r, 1);
+
+            const stoch = this.stochastic(highs, lows, closes, 14);
+            const k = stoch[stoch.length-1];
+            if (stDir === 'up' && k > 80) this.addWeightedVote('neutral', `Stoch OB (trend up)`, k, 1);
+            else if (stDir === 'down' && k < 20) this.addWeightedVote('neutral', `Stoch OS (trend down)`, k, 1);
+            else if (k < 20) this.addWeightedVote('buy', `Stoch OS ${k.toFixed(0)}`, k, 1);
+            else if (k > 80) this.addWeightedVote('sell', `Stoch OB ${k.toFixed(0)}`, k, 1);
+            else this.addWeightedVote('neutral', `Stoch neutral`, k, 1);
+
+            const bb = this.bollinger(closes, 20, 2);
+            const ub = bb.upper[bb.upper.length-1], lb = bb.lower[bb.lower.length-1];
+            if (price > ub) this.addWeightedVote('buy', 'Breakout upper BB', price, 1);
+            else if (price < lb) this.addWeightedVote('sell', 'Breakdown lower BB', price, 1);
+            else this.addWeightedVote('neutral', 'Inside BB', price, 1);
+
+            const rh = Math.max(...highs.slice(-31, -1));
+            const rl = Math.min(...lows.slice(-31, -1));
+            if (price > rh) this.addWeightedVote('buy', 'Breakout resistance', rh, 2);
+            else if (price < rl) this.addWeightedVote('sell', 'Breakdown support', rl, 2);
+            else this.addWeightedVote('neutral', 'Inside S/R', price, 1);
+
+            const cciV = this.cci(highs, lows, closes, 20);
+            const cv = cciV[cciV.length-1];
+            if (cv > 100) this.addWeightedVote('buy', 'CCI >100', cv, 1);
+            else if (cv < -100) this.addWeightedVote('sell', 'CCI <-100', cv, 1);
+            else this.addWeightedVote('neutral', 'CCI neutral', cv, 1);
+
+            const wrV = this.williamsR(highs, lows, closes, 14);
+            const w = wrV[wrV.length-1];
+            if (w < -80) this.addWeightedVote('buy', `WR OS ${w.toFixed(0)}`, w, 1);
+            else if (w > -20) this.addWeightedVote('sell', `WR OB ${w.toFixed(0)}`, w, 1);
+            else this.addWeightedVote('neutral', 'WR neutral', w, 1);
+
+            if (volumes && volumes.filter(v=>v!==null).length > 20) {
+                const mfiV = this.mfi(highs, lows, closes, volumes, 14);
+                const mv = mfiV[mfiV.length-1] || 50;
+                if (mv < 20) this.addWeightedVote('buy', `MFI OS ${mv.toFixed(0)}`, mv, 1);
+                else if (mv > 80) this.addWeightedVote('sell', `MFI OB ${mv.toFixed(0)}`, mv, 1);
+                else this.addWeightedVote('neutral', 'MFI neutral', mv, 1);
+            } else this.addWeightedVote('neutral', 'No volume', 0, 1);
+
+            const pat = this.candlePattern(highs, lows, closes);
+            if (pat.signal === 'bullish') this.addWeightedVote('buy', `Bullish: ${pat.name}`, 0, 1);
+            else if (pat.signal === 'bearish') this.addWeightedVote('sell', `Bearish: ${pat.name}`, 0, 1);
+            else this.addWeightedVote('neutral', `Pattern: ${pat.name}`, 0, 1);
+
+            const avgAtr = atrSeries.slice(-20).reduce((a,b)=>a+b,0)/Math.min(20, atrSeries.length);
+            if (latestAtr > avgAtr*1.3) this.addWeightedVote('neutral', 'High volatility', latestAtr, 1);
+            else if (latestAtr < avgAtr*0.7) this.addWeightedVote('neutral', 'Low volatility', latestAtr, 1);
+            else this.addWeightedVote('neutral', 'Normal volatility', latestAtr, 1);
+
+            // HASIL
+            const totalWeight = this.weightedBuy + this.weightedSell;
+            const buyPct = totalWeight > 0 ? (this.weightedBuy / totalWeight) * 100 : 0;
+            const sellPct = totalWeight > 0 ? (this.weightedSell / totalWeight) * 100 : 0;
+            const totalVotes = this.votes.buy + this.votes.sell + this.votes.neutral;
+            const neutralPct = totalVotes > 0 ? (this.votes.neutral / totalVotes) * 100 : 0;
             const voteDiff = Math.abs(this.votes.buy - this.votes.sell);
-            let finalDecision = 'HOLD', confidence = 50, reason = '', recommendation = '';
-            const strongBullish = (stDirection === 'up' && currentPrice > lastHma && aroonUp > aroonDown);
-            const strongBearish = (stDirection === 'down' && currentPrice < lastHma && aroonDown > aroonUp);
-            if (this.isXau && strongBullish) {
-                finalDecision = 'BUY';
-                confidence = Math.min(96, 75 + (buyPercent * 0.25));
-                reason = `SuperTrend & HMA bullish, Aroon Up ${aroonUp.toFixed(1)}`;
-                recommendation = `XAUUSD dalam tren naik kuat. Entry BUY STOP di atas harga (0.12%), SL 0.33%, TP1 0.30%.`;
+
+            // LOGIKA KEPUTUSAN
+            let decision = 'HOLD', confidence = 50, reason = '', recommendation = '';
+            const strongBull = (stDir === 'up' && price > lastHma && aroonUp > aroonDn && buyPct > 60);
+            const strongBear = (stDir === 'down' && price < lastHma && aroonDn > aroonUp && sellPct > 60);
+
+            if (isRanging) {
+                decision = 'HOLD';
+                confidence = 30;
+                reason = `Pasar ranging (ADX ${adxVal.toFixed(0)} <18) — hindari entry`;
+                recommendation = `Tren tidak jelas. Tunggu ADX > 25 sebelum entry.`;
             }
-            else if (this.isXau && strongBearish) {
-                finalDecision = 'SELL';
-                confidence = Math.min(96, 75 + (sellPercent * 0.25));
-                reason = `SuperTrend & HMA bearish, Aroon Down ${aroonDown.toFixed(1)}`;
-                recommendation = `XAUUSD dalam tren turun. Entry SELL STOP di bawah harga (0.12%), SL 0.33%, TP1 0.30%.`;
+            else if (strongBull && isTrending) {
+                decision = 'BUY';
+                confidence = Math.min(92, 70 + (buyPct * 0.25));
+                reason = `Strong uptrend: ST↑ + HMA↑ + Aroon ${aroonUp.toFixed(0)} + ADX ${adxVal.toFixed(0)}`;
+                recommendation = `Tren naik kuat & terkonfirmasi. Entry BUY STOP dekat harga, target mengikuti momentum.`;
             }
-            else if (this.isCrypto && stDirection === 'up' && adxVal > 25 && plusDI > minusDI) {
-                finalDecision = 'BUY';
-                confidence = Math.min(96, 75 + (buyPercent * 0.2));
-                reason = `Crypto strong uptrend`;
-                recommendation = `Tren naik kuat. Entry BUY STOP di atas harga.`;
+            else if (strongBear && isTrending) {
+                decision = 'SELL';
+                confidence = Math.min(92, 70 + (sellPct * 0.25));
+                reason = `Strong downtrend: ST↓ + HMA↓ + Aroon ${aroonDn.toFixed(0)} + ADX ${adxVal.toFixed(0)}`;
+                recommendation = `Tren turun kuat & terkonfirmasi. Entry SELL STOP dekat harga.`;
             }
-            else if (this.isCrypto && stDirection === 'down' && adxVal > 25 && minusDI > plusDI) {
-                finalDecision = 'SELL';
-                confidence = Math.min(96, 75 + (sellPercent * 0.2));
-                reason = `Crypto strong downtrend`;
-                recommendation = `Tren turun kuat. Entry SELL STOP di bawah harga.`;
+            else if (strongBull && isTrendWeak) {
+                decision = 'BUY';
+                confidence = Math.min(80, 55 + (buyPct * 0.3));
+                reason = `Uptrend moderat (ADX ${adxVal.toFixed(0)}), momentum cukup`;
+                recommendation = `Tren naik moderat. Entry kecil dengan SL ketat.`;
             }
-            else if (breakoutUp && (this.votes.buy > this.votes.sell || buyPercent > 55)) {
-                finalDecision = 'BUY';
-                confidence = 65 + (buyPercent * 0.3);
-                reason = `Breakout up (${this.votes.buy} BUY vs ${this.votes.sell} SELL)`;
-                recommendation = `Breakout ke atas. Entry BUY STOP di atas harga.`;
+            else if (strongBear && isTrendWeak) {
+                decision = 'SELL';
+                confidence = Math.min(80, 55 + (sellPct * 0.3));
+                reason = `Downtrend moderat (ADX ${adxVal.toFixed(0)}), momentum cukup`;
+                recommendation = `Tren turun moderat. Entry kecil dengan SL ketat.`;
             }
-            else if (breakoutDown && (this.votes.sell > this.votes.buy || sellPercent > 55)) {
-                finalDecision = 'SELL';
-                confidence = 65 + (sellPercent * 0.3);
-                reason = `Breakdown (${this.votes.sell} SELL vs ${this.votes.buy} BUY)`;
-                recommendation = `Breakdown ke bawah. Entry SELL STOP di bawah harga.`;
+            else if (buyPct > 65 && voteDiff >= 3) {
+                decision = 'BUY';
+                confidence = Math.min(75, 50 + buyPct * 0.25);
+                reason = `Mayoritas BUY (${buyPct.toFixed(0)}% weighted, diff ${voteDiff})`;
+                recommendation = `Momentum buy dominan. Entry BUY STOP di atas high terakhir.`;
             }
-            else if (this.votes.buy > this.votes.sell && voteDiff >= 2) {
-                finalDecision = 'BUY';
-                confidence = 50 + (buyPercent * 0.4);
-                reason = `${this.votes.buy} BUY vs ${this.votes.sell} SELL`;
-                recommendation = `Momentum positif. Entry BUY STOP di atas resistance.`;
-            }
-            else if (this.votes.sell > this.votes.buy && voteDiff >= 2) {
-                finalDecision = 'SELL';
-                confidence = 50 + (sellPercent * 0.4);
-                reason = `${this.votes.sell} SELL vs ${this.votes.buy} BUY`;
-                recommendation = `Tekanan jual. Entry SELL STOP di bawah support.`;
+            else if (sellPct > 65 && voteDiff >= 3) {
+                decision = 'SELL';
+                confidence = Math.min(75, 50 + sellPct * 0.25);
+                reason = `Mayoritas SELL (${sellPct.toFixed(0)}% weighted, diff ${voteDiff})`;
+                recommendation = `Momentum sell dominan. Entry SELL STOP di bawah low terakhir.`;
             }
             else {
-                finalDecision = 'HOLD';
-                confidence = 40 + (voteDiff * 10);
-                reason = `Tidak ada breakout jelas (${this.votes.buy} BUY / ${this.votes.sell} SELL)`;
-                recommendation = `Tunggu konfirmasi breakout. Disarankan HOLD.`;
+                decision = 'HOLD';
+                confidence = 35 + voteDiff * 5;
+                reason = `Konsensus lemah (${buyPct.toFixed(0)}% BUY vs ${sellPct.toFixed(0)}% SELL)`;
+                recommendation = `Tidak ada edge jelas. Tunggu konfirmasi breakout atau ADX > 25.`;
             }
-            const entryLevels = this.calculateDynamicEntryLevels(finalDecision, currentPrice, latestAtr);
+
+            const entryLevels = this.calcEntry(decision, price, latestAtr, highs, lows);
+
             return {
-                decision: finalDecision,
-                confidence: Math.min(96, Math.floor(confidence)),
-                reason: reason,
+                decision, confidence: Math.min(92, Math.floor(confidence)), reason,
                 recommendationText: recommendation,
-                voteSummary: { buy: this.votes.buy, sell: this.votes.sell, neutral: this.votes.neutral, totalValid: totalValid, buyPercentage: buyPercent.toFixed(1), sellPercentage: sellPercent.toFixed(1), neutralPercentage: (100-buyPercent-sellPercent).toFixed(1) },
+                voteSummary: {
+                    buy: this.votes.buy, sell: this.votes.sell, neutral: this.votes.neutral,
+                    totalValid: this.votes.buy + this.votes.sell,
+                    buyPercentage: buyPct.toFixed(1),
+                    sellPercentage: sellPct.toFixed(1),
+                    neutralPercentage: neutralPct.toFixed(1),
+                    weightedBuy: this.weightedBuy, weightedSell: this.weightedSell
+                },
                 voteDetails: this.voteDetails,
-                entry: entryLevels.entry,
-                stopLoss: entryLevels.stopLoss,
-                takeProfits: entryLevels.takeProfits,
-                riskReward: entryLevels.riskReward,
-                entryType: entryLevels.entryType,
-                atrUsed: latestAtr
+                entry: entryLevels.entry, stopLoss: entryLevels.stopLoss,
+                takeProfits: entryLevels.takeProfits, riskReward: entryLevels.riskReward,
+                entryType: entryLevels.entryType, atrUsed: latestAtr,
+                adxValue: adxVal, isRanging
             };
         }
-        addVote(type, reason, value) { this.votes[type]++; this.voteDetails.push({ type, reason, value: typeof value === 'number' ? value.toFixed(5) : value }); }
 
-        calculateDynamicEntryLevels(decision, price, atr) {
+        // ---------- ENTRY DEKAT HARGA + SL/TP PROPORSIONAL PER ASET ----------
+        calcEntry(decision, price, atr, highs, lows) {
+            if (decision === 'HOLD') return { entry: null, stopLoss: null, takeProfits: null, riskReward: null, entryType: 'MARKET' };
+
+            const safeAtr = atr > 0 ? atr : price * 0.005;
+            const lastHigh = highs[highs.length-1];
+            const lastLow = lows[lows.length-1];
+
+            // ==== KONFIGURASI SL/TP PER JENIS ASET ====
+            // Entry dekat harga (0.08-0.10 ATR), SL/TP berbasis ATR dengan multiplier realistis
+            let breakoutMult, slMult, tp1Mult, tp2Mult, tp3Mult;
             if (this.isXau) {
-                const entryPercent = 0.0012, slPercent = 0.0033, tp1Percent = 0.0030, tp2Percent = 0.0060, tp3Percent = 0.0090;
-                if (decision === 'BUY') {
-                    const entry = price * (1 + entryPercent), stopLoss = entry * (1 - slPercent);
-                    const tp1 = entry * (1 + tp1Percent), tp2 = entry * (1 + tp2Percent), tp3 = entry * (1 + tp3Percent);
-                    return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: '1.5', entryType: 'BUY STOP' };
-                } else if (decision === 'SELL') {
-                    const entry = price * (1 - entryPercent), stopLoss = entry * (1 + slPercent);
-                    const tp1 = entry * (1 - tp1Percent), tp2 = entry * (1 - tp2Percent), tp3 = entry * (1 - tp3Percent);
-                    return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: '1.5', entryType: 'SELL STOP' };
-                }
-                return { entry: null, stopLoss: null, takeProfits: null, riskReward: null, entryType: 'MARKET' };
+                // XAU: ATR ~$5 di H1 → SL ~$7.5, TP1 ~$11.25
+                breakoutMult = 0.08; slMult = 1.5;  tp1Mult = 2.25; tp2Mult = 3.5;  tp3Mult = 5.0;
+            } else if (this.isCrypto) {
+                // Crypto: volatil, butuh SL lebih lebar
+                breakoutMult = 0.10; slMult = 1.8;  tp1Mult = 2.7;  tp2Mult = 4.5;  tp3Mult = 7.0;
+            } else if (this.isForex) {
+                // Forex: moderate
+                breakoutMult = 0.08; slMult = 1.3;  tp1Mult = 1.95; tp2Mult = 3.0;  tp3Mult = 4.5;
+            } else {
+                // XAG / fallback
+                breakoutMult = 0.10; slMult = 1.5;  tp1Mult = 2.25; tp2Mult = 3.5;  tp3Mult = 5.0;
             }
-            if (this.isCrypto && atr && atr > 0) {
-                const breakoutDist = atr * 0.5, riskAmount = atr * 2.0;
-                const tpMult1 = 2.0, tpMult2 = 3.0, tpMult3 = 4.0;
-                const reward1 = riskAmount * tpMult1, reward2 = riskAmount * tpMult2, reward3 = riskAmount * tpMult3;
-                if (decision === 'BUY') {
-                    const entry = price + breakoutDist, stopLoss = entry - riskAmount;
-                    const tp1 = entry + reward1, tp2 = entry + reward2, tp3 = entry + reward3;
-                    return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: (riskAmount>0?(reward1/riskAmount).toFixed(1):'2.0'), entryType: 'BUY STOP' };
-                } else if (decision === 'SELL') {
-                    const entry = price - breakoutDist, stopLoss = entry + riskAmount;
-                    const tp1 = entry - reward1, tp2 = entry - reward2, tp3 = entry - reward3;
-                    return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: (riskAmount>0?(reward1/riskAmount).toFixed(1):'2.0'), entryType: 'SELL STOP' };
-                }
-                return { entry: null, stopLoss: null, takeProfits: null, riskReward: null, entryType: 'MARKET' };
-            }
-            const fallbackDist = 0.001;
-            if (decision === 'BUY') {
-                const entry = price * (1 + fallbackDist), stopLoss = entry * (1 - 0.002);
-                const tp1 = entry * (1 + 0.003), tp2 = entry * (1 + 0.005), tp3 = entry * (1 + 0.007);
-                return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: '1.5', entryType: 'BUY STOP' };
-            } else if (decision === 'SELL') {
-                const entry = price * (1 - fallbackDist), stopLoss = entry * (1 + 0.002);
-                const tp1 = entry * (1 - 0.003), tp2 = entry * (1 - 0.005), tp3 = entry * (1 - 0.007);
-                return { entry, stopLoss, takeProfits: [{ price: tp1, percentage: 40 }, { price: tp2, percentage: 35 }, { price: tp3, percentage: 25 }], riskReward: '1.5', entryType: 'SELL STOP' };
-            }
-            return { entry: null, stopLoss: null, takeProfits: null, riskReward: null, entryType: 'MARKET' };
-        }
 
-        calculateEMA(data, period) { const k = 2/(period+1); const ema = [data[0]]; for(let i=1;i<data.length;i++) ema.push(data[i]*k + ema[i-1]*(1-k)); return ema; }
-        calculateSMA(data, period) { const sma = []; for(let i=period-1;i<data.length;i++) { const sum = data.slice(i-period+1,i+1).reduce((a,b)=>a+b,0); sma.push(sum/period); } return sma; }
-        calculateRSI(data, period) { let gains=0,losses=0; for(let i=1;i<=period;i++){ const ch=data[i]-data[i-1]; if(ch>=0) gains+=ch; else losses-=ch; } let avgGain=gains/period, avgLoss=losses/period, rs=avgGain/avgLoss; const rsi=[100-(100/(1+rs))]; for(let i=period+1;i<data.length;i++){ const ch=data[i]-data[i-1]; if(ch>=0){ avgGain=(avgGain*(period-1)+ch)/period; avgLoss=(avgLoss*(period-1))/period; } else { avgGain=(avgGain*(period-1))/period; avgLoss=(avgLoss*(period-1)-ch)/period; } rs=avgGain/avgLoss; rsi.push(100-(100/(1+rs))); } return rsi; }
-        calculateMACD(data,fast,slow,signal){ const emaFast=this.calculateEMA(data,fast); const emaSlow=this.calculateEMA(data,slow); const macdLine=emaFast.map((v,i)=>v-emaSlow[i]); const signalLine=this.calculateEMA(macdLine,signal); return {macd:macdLine,signal:signalLine}; }
-        calculateBollingerBands(data,period,stdDev){ const mid=[],up=[],low=[]; for(let i=period-1;i<data.length;i++){ const w=data.slice(i-period+1,i+1); const sma=w.reduce((a,b)=>a+b,0)/period; const variance=w.map(x=>Math.pow(x-sma,2)).reduce((a,b)=>a+b,0)/period; const std=Math.sqrt(variance); mid.push(sma); up.push(sma+stdDev*std); low.push(sma-stdDev*std); } return {middle:mid,upper:up,lower:low}; }
-        calculateStochastic(highs,lows,closes,period,smooth){ const k=[]; for(let i=period-1;i<closes.length;i++){ const highW=highs.slice(i-period+1,i+1); const lowW=lows.slice(i-period+1,i+1); const highest=Math.max(...highW), lowest=Math.min(...lowW); k.push(((closes[i]-lowest)/(highest-lowest))*100); } return {k}; }
-        calculatePSAR(highs,lows,step,maxStep){ const sar=[]; let trend=1,ep=highs[0],af=step,currentSar=lows[0]; sar.push(currentSar); for(let i=1;i<highs.length;i++){ let prevSar=sar[i-1]; if(trend===1){ currentSar=prevSar+af*(ep-prevSar); if(i>=2 && currentSar>lows[i-2]) currentSar=lows[i-2]; if(currentSar>lows[i-1]) currentSar=lows[i-1]; if(currentSar>lows[i]){ trend=-1; currentSar=ep; af=step; ep=lows[i]; } else { if(highs[i]>ep){ ep=highs[i]; af=Math.min(af+step,maxStep); } } } else { currentSar=prevSar+af*(ep-prevSar); if(i>=2 && currentSar<highs[i-2]) currentSar=highs[i-2]; if(currentSar<highs[i-1]) currentSar=highs[i-1]; if(currentSar<highs[i]){ trend=1; currentSar=ep; af=step; ep=highs[i]; } else { if(lows[i]<ep){ ep=lows[i]; af=Math.min(af+step,maxStep); } } } sar.push(currentSar); } return sar; }
-        calculateADX(highs,lows,closes,period){ const tr=[]; for(let i=1;i<highs.length;i++) tr.push(Math.max(highs[i]-lows[i],Math.abs(highs[i]-closes[i-1]),Math.abs(lows[i]-closes[i-1]))); const plusDM=[],minusDM=[]; for(let i=1;i<highs.length;i++){ const up=highs[i]-highs[i-1], down=lows[i-1]-lows[i]; plusDM.push((up>down && up>0)?up:0); minusDM.push((down>up && down>0)?down:0); } const smoothPlusDM=this.calculateEMA(plusDM,period); const smoothMinusDM=this.calculateEMA(minusDM,period); const smoothTR=this.calculateEMA(tr,period); const plusDI=smoothPlusDM.map((v,i)=> (v/smoothTR[i])*100); const minusDI=smoothMinusDM.map((v,i)=> (v/smoothTR[i])*100); const dx=plusDI.map((v,i)=> (v+minusDI[i])===0?0:(Math.abs(v-minusDI[i])/(v+minusDI[i]))*100); const adx=this.calculateEMA(dx,period); return {adx,plusDI,minusDI}; }
-        analyzeVolume(volumes,closes){ const recentVol = volumes.filter(v=>v!==null).slice(-20); if(recentVol.length < 10) return {signal:'neutral',ratio:1}; const avg=recentVol.slice(0,-1).reduce((a,b)=>a+b,0)/(recentVol.length-1); const ratio=recentVol[recentVol.length-1]/avg; const priceChange=(closes[closes.length-1]-closes[closes.length-2])/closes[closes.length-2]; if(ratio>1.3 && priceChange>0) return {signal:'bullish',ratio}; if(ratio>1.3 && priceChange<0) return {signal:'bearish',ratio}; return {signal:'neutral',ratio}; }
-        calculateCCI(highs,lows,closes,period){ const tp = highs.map((h,i)=> (h + lows[i] + closes[i])/3); const sma = this.calculateSMA(tp, period); const mad = []; for(let i=period-1;i<tp.length;i++){ const slice = tp.slice(i-period+1,i+1); const mean = sma[i-(period-1)]; const sumAbs = slice.reduce((acc,val)=> acc + Math.abs(val-mean),0); mad.push(sumAbs/period); } const cci = []; for(let i=0;i<sma.length;i++){ if(mad[i] === 0) cci.push(0); else cci.push((tp[i+period-1] - sma[i]) / (0.015 * mad[i])); } return cci; }
-        calculateMFI(highs,lows,closes,volumes,period){ const typicalPrice = highs.map((h,i)=> (h + lows[i] + closes[i])/3); const rawMoneyFlow = typicalPrice.map((tp,i)=> tp * (volumes[i] || 0)); const moneyFlow = []; for(let i=1;i<typicalPrice.length;i++){ const diff = typicalPrice[i] - typicalPrice[i-1]; if(diff > 0) moneyFlow.push({positive: rawMoneyFlow[i], negative: 0}); else if(diff < 0) moneyFlow.push({positive: 0, negative: rawMoneyFlow[i]}); else moneyFlow.push({positive: 0, negative: 0}); } const mfi = []; for(let i=period-1;i<moneyFlow.length;i++){ const posSum = moneyFlow.slice(i-period+1,i+1).reduce((s,item)=> s+item.positive,0); const negSum = moneyFlow.slice(i-period+1,i+1).reduce((s,item)=> s+item.negative,0); const ratio = (negSum===0)?100:(posSum/negSum); const mfiVal = 100 - (100/(1+ratio)); mfi.push(mfiVal); } return mfi; }
-        calculateWilliamsR(highs,lows,closes,period){ const wr = []; for(let i=period-1;i<closes.length;i++){ const highSlice = highs.slice(i-period+1,i+1); const lowSlice = lows.slice(i-period+1,i+1); const highest = Math.max(...highSlice); const lowest = Math.min(...lowSlice); const val = ((highest - closes[i]) / (highest - lowest)) * -100; wr.push(val); } return wr; }
-        calculateATR(highs,lows,closes,period){ const tr = []; for(let i=1;i<highs.length;i++){ const hl = highs[i]-lows[i]; const hc = Math.abs(highs[i]-closes[i-1]); const lc = Math.abs(lows[i]-closes[i-1]); tr.push(Math.max(hl, hc, lc)); } const atr = this.calculateEMA(tr, period); return atr; }
-        identifyCandlePattern(highs,lows,closes){ if(closes.length<3) return {name:'Unknown',signal:'neutral'}; const lastClose=closes[closes.length-1],lastOpen=closes[closes.length-2],lastHigh=highs[highs.length-1],lastLow=lows[lows.length-1],prevClose=closes[closes.length-3]; const body=Math.abs(lastClose-lastOpen),range=lastHigh-lastLow; const lowerWick=Math.min(lastClose,lastOpen)-lastLow, upperWick=lastHigh-Math.max(lastClose,lastOpen); if(body<range*0.3 && lowerWick>body*2 && lastClose>lastOpen) return {name:'Hammer',signal:'bullish'}; if(body<range*0.3 && upperWick>body*2 && lastClose<lastOpen) return {name:'Shooting Star',signal:'bearish'}; if(lastClose>lastOpen && lastOpen<prevClose && lastClose>prevClose) return {name:'Bullish Engulfing',signal:'bullish'}; if(lastClose<lastOpen && lastOpen>prevClose && lastClose<prevClose) return {name:'Bearish Engulfing',signal:'bearish'}; if(body<range*0.1) return {name:'Doji',signal:'neutral'}; return {name:'No Pattern',signal:'neutral'}; }
-        calculateSuperTrend(highs, lows, closes, period, multiplier) { const atr = this.calculateATR(highs, lows, closes, period); const upperBand = [], lowerBand = [], trend = []; for (let i = 0; i < closes.length; i++) { const hl2 = (highs[i] + lows[i]) / 2; const basicUpper = hl2 + multiplier * atr[i]; const basicLower = hl2 - multiplier * atr[i]; if (i === 0) { upperBand.push(basicUpper); lowerBand.push(basicLower); trend.push(1); } else { let newUpper = basicUpper, newLower = basicLower; if (basicUpper < upperBand[i-1]) newUpper = basicUpper; else newUpper = upperBand[i-1]; if (basicLower > lowerBand[i-1]) newLower = basicLower; else newLower = lowerBand[i-1]; upperBand.push(newUpper); lowerBand.push(newLower); let currentTrend = trend[i-1]; if (currentTrend === 1 && closes[i] <= lowerBand[i]) currentTrend = -1; else if (currentTrend === -1 && closes[i] >= upperBand[i]) currentTrend = 1; trend.push(currentTrend); } } const superTrend = []; for (let i = 0; i < closes.length; i++) { if (trend[i] === 1) superTrend.push(lowerBand[i]); else superTrend.push(upperBand[i]); } superTrend.direction = trend.map(t => t === 1 ? 'up' : 'down'); return superTrend; }
-        calculateAroon(highs, lows, period) { const aroonUp = [], aroonDown = []; for (let i = period-1; i < highs.length; i++) { const sliceHigh = highs.slice(i-period+1, i+1); const sliceLow = lows.slice(i-period+1, i+1); const highestIdx = sliceHigh.indexOf(Math.max(...sliceHigh)); const lowestIdx = sliceLow.indexOf(Math.min(...sliceLow)); aroonUp.push(((period - 1 - highestIdx) / (period - 1)) * 100); aroonDown.push(((period - 1 - lowestIdx) / (period - 1)) * 100); } return { up: aroonUp, down: aroonDown }; }
-        calculateHullMA(data, period) { const halfPeriod = Math.floor(period / 2); const sqrtPeriod = Math.floor(Math.sqrt(period)); const wma = (arr, p) => { const result = []; for (let i = p-1; i < arr.length; i++) { let sum = 0, weightSum = 0; for (let j = 0; j < p; j++) { const weight = j+1; sum += arr[i - j] * weight; weightSum += weight; } result.push(sum / weightSum); } return result; }; const wmaHalf = wma(data, halfPeriod); const wmaFull = wma(data, period); const rawHull = []; const minLen = Math.min(wmaHalf.length, wmaFull.length); for (let i = 0; i < minLen; i++) { rawHull.push(2 * wmaHalf[i] - wmaFull[i]); } const hull = wma(rawHull, sqrtPeriod); const pad = new Array(data.length - hull.length).fill(hull[0] || data[0]); return [...pad, ...hull]; }
+            const breakoutDist = safeAtr * breakoutMult;
+            const riskAmount   = safeAtr * slMult;
+
+            if (decision === 'BUY') {
+                // Entry: yang lebih dekat antara ATR-based & sedikit di atas high terakhir
+                const entryByAtr  = price + breakoutDist;
+                const entryByHigh = lastHigh + (safeAtr * 0.05);
+                const entry = Math.min(entryByAtr, entryByHigh);
+                const stopLoss = entry - riskAmount;
+                const tp1 = entry + riskAmount * (tp1Mult / slMult);
+                const tp2 = entry + riskAmount * (tp2Mult / slMult);
+                const tp3 = entry + riskAmount * (tp3Mult / slMult);
+                return {
+                    entry, stopLoss,
+                    takeProfits: [
+                        { price: tp1, percentage: 40 },
+                        { price: tp2, percentage: 35 },
+                        { price: tp3, percentage: 25 }
+                    ],
+                    riskReward: (tp1Mult / slMult).toFixed(2),
+                    entryType: 'BUY STOP'
+                };
+            } else {
+                const entryByAtr = price - breakoutDist;
+                const entryByLow = lastLow - (safeAtr * 0.05);
+                const entry = Math.max(entryByAtr, entryByLow);
+                const stopLoss = entry + riskAmount;
+                const tp1 = entry - riskAmount * (tp1Mult / slMult);
+                const tp2 = entry - riskAmount * (tp2Mult / slMult);
+                const tp3 = entry - riskAmount * (tp3Mult / slMult);
+                return {
+                    entry, stopLoss,
+                    takeProfits: [
+                        { price: tp1, percentage: 40 },
+                        { price: tp2, percentage: 35 },
+                        { price: tp3, percentage: 25 }
+                    ],
+                    riskReward: (tp1Mult / slMult).toFixed(2),
+                    entryType: 'SELL STOP'
+                };
+            }
+        }
     }
 
-    // ========== EVENT HANDLER ==========
+    // ============================================================
+    // MULTI-TIMEFRAME ALIGNMENT
+    // ============================================================
+    async function getMultiTimeframeBias(symbol, currentInterval) {
+        const htfMap = {
+            '1min': ['5min', '15min'],
+            '5min': ['15min', '1h'],
+            '15min': ['1h', '4h'],
+            '30min': ['1h', '4h'],
+            '1h': ['4h', '1day'],
+            '4h': ['1day'],
+            '1day': []
+        };
+        const htfList = htfMap[currentInterval] || [];
+        const biases = [];
+        for (const htf of htfList) {
+            try {
+                const data = await fetchMarketData(symbol, htf);
+                if (!data || data.closes.length < 30) continue;
+                const eng = new AdvancedTradingEngine(symbol);
+                const st = eng.superTrend(data.highs, data.lows, data.closes, 10, 3);
+                const stDir = st.direction[st.direction.length-1];
+                const hma = eng.hma(data.closes, 20);
+                const price = data.closes[data.closes.length-1];
+                const bias = (stDir === 'up' && price > hma[hma.length-1]) ? 'bullish'
+                           : (stDir === 'down' && price < hma[hma.length-1]) ? 'bearish' : 'neutral';
+                biases.push({ timeframe: htf, bias });
+                console.log(`[MTF] ${htf}: ${bias}`);
+            } catch(e) { console.warn(`[MTF] ${htf} gagal:`, e.message); }
+        }
+        if (biases.length === 0) return { overall: 'neutral', details: [] };
+        const bullCount = biases.filter(b => b.bias === 'bullish').length;
+        const bearCount = biases.filter(b => b.bias === 'bearish').length;
+        const overall = bullCount > bearCount ? 'bullish' : bearCount > bullCount ? 'bearish' : 'neutral';
+        return { overall, details: biases };
+    }
+
+    // ============================================================
+    // EVENT HANDLER
+    // ============================================================
     let currentSymbol = null, currentTimeframe = '1h', currentPrice = 0;
     let isProcessing = false;
     const dropzoneDiv = document.getElementById('dropzone');
@@ -1399,42 +1452,30 @@
     if (dropzoneDiv) {
         dropzoneDiv.addEventListener('dragover', e => { e.preventDefault(); dropzoneDiv.classList.add('drag-over'); });
         dropzoneDiv.addEventListener('dragleave', () => dropzoneDiv.classList.remove('drag-over'));
-        dropzoneDiv.addEventListener('drop', e => { e.preventDefault(); dropzoneDiv.classList.remove('drag-over'); const file = e.dataTransfer.files[0]; if (file && file.type.startsWith('image/')) processImageWithScan(file); else alert("File harus berupa gambar"); });
+        dropzoneDiv.addEventListener('drop', e => { e.preventDefault(); dropzoneDiv.classList.remove('drag-over'); const file = e.dataTransfer.files[0]; if (file && file.type.startsWith('image/')) processImageWithScan(file); else alert("File harus gambar"); });
         dropzoneDiv.onclick = () => fileInputElem?.click();
     }
     if (fileInputElem) fileInputElem.onchange = (e) => { if (e.target.files[0]) processImageWithScan(e.target.files[0]); };
 
     async function processImageWithScan(file) {
-        if (isProcessing) {
-            showToast('⏳ Sedang Proses', 'Tunggu proses sebelumnya selesai', 'fa-hourglass', 3000);
-            return;
-        }
+        if (isProcessing) { showToast('⏳ Sedang Proses', 'Tunggu proses sebelumnya', 'fa-hourglass', 3000); return; }
         isProcessing = true;
-
         if (previewAreaDiv) previewAreaDiv.style.display = 'block';
         if (assetDisplayArea) assetDisplayArea.innerHTML = '';
-        if (analyzeBtn) {
-            analyzeBtn.disabled = true;
-            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Membaca gambar...';
-        }
+        if (analyzeBtn) { analyzeBtn.disabled = true; analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Membaca gambar...'; }
         if (signalCardWrapper) signalCardWrapper.style.display = 'none';
 
         const safetyTimeout = setTimeout(() => {
             if (isProcessing) {
                 isProcessing = false;
-                if (analyzeBtn) {
-                    analyzeBtn.disabled = false;
-                    analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
-                }
-                showToast('⏱️ Timeout', 'OCR terlalu lama. Coba gambar lebih kecil/jelas.', 'fa-clock', 5000);
+                if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)'; }
+                showToast('⏱️ Timeout', 'OCR terlalu lama.', 'fa-clock', 5000);
             }
         }, 25000);
 
         const reader = new FileReader();
-
         reader.onload = async (ev) => {
             if (previewImgElem) previewImgElem.src = ev.target.result;
-
             if (previewBox) {
                 const old = previewBox.querySelector('.scan-overlay');
                 if (old) old.remove();
@@ -1448,55 +1489,47 @@
 
             let worker = null;
             let pair = null;
-            let tf = { interval: '1h', display: 'H1' };
+            let tf = null;
 
             try {
-                console.log('[OCR] Starting Tesseract...');
                 worker = await Tesseract.createWorker('eng');
                 const { data } = await worker.recognize(file);
-
                 const cleanText = (data.text || '').replace(/[^\w\s\/\-]/g, ' ').replace(/\s+/g, ' ');
                 console.log('[OCR] Text:', cleanText);
-
                 pair = detectPairFromText(cleanText);
                 tf = detectTimeframeImproved(cleanText);
 
                 if (!pair) {
-                    console.warn('[OCR] Pair tidak terdeteksi, prompt user');
-                    const userInput = prompt(
-                        "Pair tidak terdeteksi otomatis.\n\nTeks OCR:\n" + cleanText.substring(0, 200) + "\n\nMasukkan pair (contoh: XAUUSD):",
-                        "XAUUSD"
-                    );
-                    if (userInput && userInput.trim()) pair = userInput.trim().toUpperCase();
+                    const ui = prompt(`Pair tidak terdeteksi.\nTeks OCR: ${cleanText.substring(0,150)}\n\nMasukkan pair (contoh XAUUSD):`, "XAUUSD");
+                    if (ui && ui.trim()) pair = ui.trim().toUpperCase();
                 }
-
+                // WAJIB prompt TF jika tidak terdeteksi (jangan default H1)
+                if (!tf) {
+                    const ui = prompt(`Timeframe tidak terdeteksi.\nTeks OCR: ${cleanText.substring(0,150)}\n\nMasukkan timeframe (M1, M5, M15, M30, H1, H4, D1):`, "H1");
+                    if (ui && ui.trim()) {
+                        const t = ui.trim().toUpperCase();
+                        const map = { 'M1':'1min','M5':'5min','M15':'15min','M30':'30min','H1':'1h','H4':'4h','D1':'1day' };
+                        tf = { interval: map[t] || '1h', display: t };
+                    } else {
+                        tf = { interval: '1h', display: 'H1' };
+                    }
+                }
                 if (!pair) pair = 'XAUUSD';
                 pair = normalizePair(pair);
-
             } catch (ocrErr) {
                 console.error('[OCR] Gagal:', ocrErr);
-                const userInput = prompt(
-                    "OCR gagal: " + ocrErr.message + "\n\nMasukkan pair manual (contoh: XAUUSD):",
-                    "XAUUSD"
-                );
-                if (userInput && userInput.trim()) {
-                    pair = normalizePair(userInput.trim().toUpperCase());
-                    tf = { interval: '1h', display: 'H1' };
-                }
+                const ui = prompt(`OCR gagal: ${ocrErr.message}\nMasukkan pair manual:`, "XAUUSD");
+                if (ui && ui.trim()) pair = normalizePair(ui.trim().toUpperCase());
+                tf = { interval: '1h', display: 'H1' };
             } finally {
-                if (worker) {
-                    try { await worker.terminate(); } catch(e) { /* ignore */ }
-                }
+                if (worker) { try { await worker.terminate(); } catch(e) {} }
             }
 
             if (!pair) {
                 clearTimeout(safetyTimeout);
                 isProcessing = false;
-                if (analyzeBtn) {
-                    analyzeBtn.disabled = true;
-                    analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
-                }
-                showToast('❌ Dibatalkan', 'Tidak ada pair yang dipilih', 'fa-times-circle', 3000);
+                if (analyzeBtn) { analyzeBtn.disabled = true; analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)'; }
+                showToast('❌ Dibatalkan', 'Tidak ada pair dipilih', 'fa-times-circle', 3000);
                 return;
             }
 
@@ -1516,69 +1549,73 @@
                         <div class="neon-icon"><i class="fas fa-clock"></i></div>
                         <div class="neon-label">Timeframe</div>
                         <div class="neon-value">${tf.display}</div>
-                        <div class="neon-badge">Detected</div>
+                        <div class="neon-badge">✓ Cek Sesuai Chart</div>
                     </div>
                 </div>`;
             }
-
             clearTimeout(safetyTimeout);
             isProcessing = false;
-            if (analyzeBtn) {
-                analyzeBtn.disabled = false;
-                analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
-            }
-            showToast('✅ Siap Generate', `Pair: ${pair} | TF: ${tf.display}`, 'fa-check-circle', 3000);
+            if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)'; }
+            showToast('✅ Siap Generate', `Pair: ${pair} | TF: ${tf.display} — Pastikan sesuai chart!`, 'fa-check-circle', 4000);
         };
-
         reader.onerror = () => {
             clearTimeout(safetyTimeout);
             isProcessing = false;
-            if (analyzeBtn) {
-                analyzeBtn.disabled = true;
-                analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)';
-            }
+            if (analyzeBtn) { analyzeBtn.disabled = true; analyzeBtn.innerHTML = '<i class="fas fa-chart-simple"></i> GENERATE SIGNAL (Real-Time)'; }
             showToast('❌ Gagal Baca File', 'File tidak bisa dibaca', 'fa-times-circle', 3000);
         };
-
         reader.readAsDataURL(file);
     }
 
     function showPremiumLoader() {
         const overlay = document.createElement('div');
         overlay.className = 'signal-loading-overlay';
-        overlay.innerHTML = `<div class="loading-card-premium"><div class="loading-animation-icon"><i class="fas fa-vote-yea"></i></div><div class="loading-title">15 Indicators Breakout Engine</div><div class="loading-steps"><div class="step-load" id="premStep1"><i class="fas fa-chart-line"></i><span>Fetch Data</span></div><div class="step-load" id="premStep2"><i class="fas fa-chart-simple"></i><span>Calculate</span></div><div class="step-load" id="premStep3"><i class="fas fa-vote-yea"></i><span>Voting</span></div><div class="step-load" id="premStep4"><i class="fas fa-check-double"></i><span>Signal</span></div></div><div class="progress-bar-premium-load"><div class="progress-fill-premium-load" id="premProgressFill"></div></div><div class="loading-status" id="premStatusText">Initializing 15 indicators...</div><div style="margin-top:20px; display:flex; justify-content:center; gap:12px;"><div style="width:6px; height:6px; background:#00FFAA; border-radius:50%; animation: dotPulse 1.2s infinite;"></div><div style="width:6px; height:6px; background:#00FFAA; border-radius:50%; animation: dotPulse 1.2s infinite 0.2s;"></div><div style="width:6px; height:6px; background:#00FFAA; border-radius:50%; animation: dotPulse 1.2s infinite 0.4s;"></div></div></div>`;
+        overlay.innerHTML = `<div class="loading-card-premium"><div class="loading-animation-icon"><i class="fas fa-vote-yea"></i></div><div class="loading-title">Multi-Timeframe Analysis</div><div class="loading-steps"><div class="step-load" id="premStep1"><i class="fas fa-chart-line"></i><span>Fetch HTF</span></div><div class="step-load" id="premStep2"><i class="fas fa-chart-simple"></i><span>Calculate</span></div><div class="step-load" id="premStep3"><i class="fas fa-vote-yea"></i><span>Weighted Vote</span></div><div class="step-load" id="premStep4"><i class="fas fa-check-double"></i><span>Align MTF</span></div></div><div class="progress-bar-premium-load"><div class="progress-fill-premium-load" id="premProgressFill"></div></div><div class="loading-status" id="premStatusText">Initializing...</div></div>`;
         document.body.appendChild(overlay);
         return overlay;
     }
 
-    function renderSignalOutput(result, pairSymbol, timeframeDisplay, livePrice, liveTimestamp) {
+    function renderSignalOutput(result, pairSymbol, timeframeDisplay, livePrice, liveTimestamp, mtfBias) {
         if (signalCardWrapper) signalCardWrapper.style.display = 'block';
         const round = (val) => Math.round(val * 100000) / 100000;
         const currentPriceDisplay = livePrice ? `${round(livePrice)} <span style="font-size:0.6rem;">(live @ ${new Date(liveTimestamp).toLocaleTimeString()})</span>` : (currentPrice > 0 ? round(currentPrice) : 'N/A');
         const buyPercent = parseFloat(result.voteSummary.buyPercentage);
         const sellPercent = parseFloat(result.voteSummary.sellPercentage);
         const neutralPercent = parseFloat(result.voteSummary.neutralPercentage);
+
+        let mtfBadge = '';
+        if (mtfBias && mtfBias.details && mtfBias.details.length > 0) {
+            const mtfColors = { bullish: '#00FFAA', bearish: '#FF5555', neutral: '#FFB347' };
+            mtfBadge = `<div class="insight-stat" style="background:rgba(0,0,0,0.4); border-left:2px solid ${mtfColors[mtfBias.overall]};"><i class="fas fa-layer-group"></i> MTF: <strong style="color:${mtfColors[mtfBias.overall]};">${mtfBias.overall.toUpperCase()}</strong></div>`;
+        }
+
+        const rangingWarning = result.isRanging
+            ? `<div style="background:rgba(255,180,71,0.15); border:1px solid #FFB347; border-radius:16px; padding:10px 16px; margin:12px 0; font-size:0.75rem; color:#FFB347;"><i class="fas fa-exclamation-triangle"></i> <strong>PASAR RANGING</strong> (ADX ${result.adxValue.toFixed(0)}) — Sinyal HOLD dipaksakan untuk hindari false breakout.</div>`
+            : '';
+
         let voteDetailsHtml = '';
         result.voteDetails.forEach((v, idx) => {
             let typeClass = '', typeIcon = '';
             if (v.type === 'buy') { typeClass = 'vote-type-buy'; typeIcon = '<i class="fas fa-arrow-up"></i> BUY'; }
             else if (v.type === 'sell') { typeClass = 'vote-type-sell'; typeIcon = '<i class="fas fa-arrow-down"></i> SELL'; }
             else { typeClass = 'vote-type-neutral'; typeIcon = '<i class="fas fa-minus"></i> NEU'; }
-            voteDetailsHtml += `<div class="detail-vote-item" data-index="${idx}" style="--i: ${idx};"><div class="vote-type-badge ${typeClass}">${typeIcon}</div><div class="detail-reason">${v.reason}</div><div class="detail-value">${v.value}</div></div>`;
+            voteDetailsHtml += `<div class="detail-vote-item" data-index="${idx}" style="--i: ${idx};"><div class="vote-type-badge ${typeClass}">${typeIcon}</div><div class="detail-reason">${v.reason}</div><div class="detail-value">${v.value} <span style="opacity:0.5;">×${v.weight}</span></div></div>`;
         });
         const tpHtml = result.takeProfits ? result.takeProfits.map((tp, idx) => `<div class="tp-item-modern" style="border-left-color:${result.decision === 'BUY' ? '#00FFAA' : '#FF5555'};"><span>Target ${idx+1}</span><span style="font-weight:700;">${round(tp.price)}</span><span style="font-size:0.65rem;">${tp.percentage}%</span></div>`).join('') : '';
         const atrInfo = result.atrUsed ? `<div class="insight-stat" style="background:rgba(0,255,170,0.2);"><i class="fas fa-chart-line"></i> ATR: ${round(result.atrUsed)}</div>` : '';
+        const entryDist = result.entry && livePrice ? Math.abs((result.entry - livePrice) / livePrice * 100).toFixed(3) : '—';
         const html = `
         <div class="signal-premium-card">
-            <div class="signal-header"><div class="pair-badge"><i class="fas fa-chart-line"></i> ${pairSymbol} | ${timeframeDisplay}</div><div class="entry-type-badge">${result.entryType}</div><div class="consensus-badge">15 Indicators</div></div>
+            <div class="signal-header"><div class="pair-badge"><i class="fas fa-chart-line"></i> ${pairSymbol} | ${timeframeDisplay}</div><div class="entry-type-badge">${result.entryType}</div><div class="consensus-badge">Weighted MTF</div></div>
             <div class="signal-decision-modern"><div class="decision-glow" style="background:${result.decision === 'BUY' ? 'linear-gradient(135deg,#00C896,#008F5F)' : (result.decision === 'SELL' ? 'linear-gradient(135deg,#E63946,#B91C1C)' : 'linear-gradient(135deg,#F4A261,#E76F00)')}"><i class="fas fa-arrow-${result.decision === 'BUY' ? 'up' : (result.decision === 'SELL' ? 'down' : 'pause')}"></i><span>${result.decision}</span></div></div>
-            <div class="current-price-row"><span class="price-badge">Current Price: ${currentPriceDisplay}</span><span class="entry-gap-badge">Entry Dist: 0.12% (SL 0.33%)</span></div>
-            <div class="recommendation-panel"><div class="insight-header"><i class="fas fa-bullhorn"></i><span>INSIGHT</span></div><div class="insight-content"><div class="insight-text">${result.recommendationText}</div><div class="insight-stats"><div class="insight-stat confidence-badge"><i class="fas fa-chart-line"></i> Confidence: ${result.confidence}%</div><div class="insight-stat votediff-badge"><i class="fas fa-vote-yea"></i> Vote Diff: ${Math.abs(result.voteSummary.buy - result.voteSummary.sell)}</div>${atrInfo}</div></div></div>
+            ${rangingWarning}
+            <div class="current-price-row"><span class="price-badge">Current: ${currentPriceDisplay}</span><span class="entry-gap-badge">Entry Dist: ${entryDist}%</span></div>
+            <div class="recommendation-panel"><div class="insight-header"><i class="fas fa-bullhorn"></i><span>INSIGHT</span></div><div class="insight-content"><div class="insight-text">${result.recommendationText}</div><div class="insight-stats"><div class="insight-stat confidence-badge"><i class="fas fa-chart-line"></i> Confidence: ${result.confidence}%</div><div class="insight-stat votediff-badge"><i class="fas fa-vote-yea"></i> Diff: ${Math.abs(result.voteSummary.buy - result.voteSummary.sell)}</div>${atrInfo}${mtfBadge}</div></div></div>
             <div class="vote-stats-horizontal"><div class="vote-stat-item"><div class="vote-number">${result.voteSummary.buy}</div><div class="vote-label">BUY</div><div class="vote-percent">${result.voteSummary.buyPercentage}%</div></div><div class="vote-stat-item"><div class="vote-number">${result.voteSummary.sell}</div><div class="vote-label">SELL</div><div class="vote-percent">${result.voteSummary.sellPercentage}%</div></div><div class="vote-stat-item"><div class="vote-number">${result.voteSummary.neutral}</div><div class="vote-label">NEUTRAL</div><div class="vote-percent">${neutralPercent}%</div></div></div>
             <div class="bar-container"><div class="vote-bar"><div class="vote-bar-buy" style="width:${buyPercent}%;">BUY ${buyPercent}%</div><div class="vote-bar-sell" style="width:${sellPercent}%;">SELL ${sellPercent}%</div>${neutralPercent > 0 ? `<div class="vote-bar-neutral" style="width:${neutralPercent}%;">NEU ${neutralPercent}%</div>` : ''}</div></div>
-            <div class="confidence-modern"><div class="confidence-header"><span><i class="fas fa-chart-line"></i> Breakout Strength</span><span>${result.confidence}%</span></div><div class="confidence-bar-bg" title="Klik untuk detail konsensus"><div class="confidence-bar-fill" style="width:${result.confidence}%;"></div></div><div class="confidence-value"><div class="reason-text"><i class="fas fa-microchip"></i> ${result.reason}</div><div class="power-badge"><i class="fas fa-bolt"></i> ${result.confidence}% power</div></div></div>
+            <div class="confidence-modern"><div class="confidence-header"><span><i class="fas fa-chart-line"></i> Breakout Strength</span><span>${result.confidence}%</span></div><div class="confidence-bar-bg"><div class="confidence-bar-fill" style="width:${result.confidence}%;"></div></div><div class="confidence-value"><div class="reason-text"><i class="fas fa-microchip"></i> ${result.reason}</div><div class="power-badge"><i class="fas fa-bolt"></i> ${result.confidence}%</div></div></div>
             <div class="tabs-signal"><button class="tab-btn active" data-tab="risk"><i class="fas fa-shield-alt"></i> Risk</button><button class="tab-btn" data-tab="details"><i class="fas fa-list-ul"></i> Details</button></div>
-            <div id="tab-risk" class="tab-content active"><div class="risk-management-modern"><div class="risk-grid"><div class="risk-item"><div class="risk-label">Entry (Pending)</div><div class="risk-value">${result.entry ? round(result.entry) : 'N/A'}</div></div><div class="risk-item"><div class="risk-label">Stop Loss</div><div class="risk-value">${result.stopLoss ? round(result.stopLoss) : 'N/A'}</div></div></div><div class="tp-list-modern">${tpHtml}</div>${result.riskReward ? `<div style="display:flex; justify-content:space-between; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);"><span style="font-size:0.7rem;">Risk/Reward</span><span style="font-weight:700;">${result.riskReward}:1</span></div>` : ''}</div></div>
+            <div id="tab-risk" class="tab-content active"><div class="risk-management-modern"><div class="risk-grid"><div class="risk-item"><div class="risk-label">Entry (Pending)</div><div class="risk-value">${result.entry ? round(result.entry) : 'N/A'}</div></div><div class="risk-item"><div class="risk-label">Stop Loss</div><div class="risk-value">${result.stopLoss ? round(result.stopLoss) : 'N/A'}</div></div></div><div class="tp-list-modern">${tpHtml}</div>${result.riskReward ? `<div style="display:flex; justify-content:space-between; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);"><span style="font-size:0.7rem;">Risk/Reward (TP1)</span><span style="font-weight:700;">${result.riskReward}:1</span></div>` : ''}</div></div>
             <div id="tab-details" class="tab-content"><div class="detail-vote-list">${voteDetailsHtml || '<div style="text-align:center; padding:20px; color:#8BA0C0;">No details</div>'}</div></div>
         </div>`;
         signalPanel.innerHTML = html;
@@ -1592,20 +1629,18 @@
             });
         });
         document.querySelectorAll('.detail-vote-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+            item.addEventListener('click', () => {
                 const idx = item.getAttribute('data-index');
-                const detail = result.voteDetails[idx];
-                if (detail) alert(`📊 Detail Indikator:\n${detail.reason}\n📈 Nilai: ${detail.value}`);
+                const d = result.voteDetails[idx];
+                if (d) showToast(`📊 ${d.type.toUpperCase()} (bobot ${d.weight})`, `${d.reason} — nilai: ${d.value}`, 'fa-info-circle', 4000);
             });
         });
-        const confBar = document.querySelector('.confidence-bar-bg');
-        if (confBar) confBar.addEventListener('click', () => alert(`⚡ Breakout Strength: ${result.confidence}%\n📋 ${result.reason}`));
     }
 
     if (analyzeBtn) {
         analyzeBtn.onclick = async () => {
-            if (!consumeOneLimit()) return;
             if (!currentSymbol) { alert("Upload screenshot dulu!"); return; }
+            if (!consumeOneLimit()) return;
             const loader = showPremiumLoader();
             const progressFill = loader.querySelector('#premProgressFill');
             const statusTextLoader = loader.querySelector('#premStatusText');
@@ -1614,40 +1649,69 @@
             const step3 = loader.querySelector('#premStep3');
             const step4 = loader.querySelector('#premStep4');
             let progress = 0;
-            const interval = setInterval(() => { progress += 1.5; if (progressFill) progressFill.style.width = Math.min(100, progress) + '%'; if (progress >= 100) clearInterval(interval); }, 50);
+            const interval = setInterval(() => { progress += 1.2; if (progressFill) progressFill.style.width = Math.min(95, progress) + '%'; }, 60);
             try {
-                if (statusTextLoader) statusTextLoader.innerHTML = 'Fetching market data...';
+                if (statusTextLoader) statusTextLoader.innerHTML = 'Fetching market data + higher timeframe...';
                 if (step1) step1.classList.add('active');
-                const marketData = await fetchMarketData(currentSymbol, currentTimeframe);
-                if (statusTextLoader) statusTextLoader.innerHTML = 'Getting live price...';
-                const live = await getRealTimePrice(currentSymbol);
-                let livePrice = null, liveTimestamp = null;
-                if (live && live.price && !isNaN(live.price)) { livePrice = live.price; liveTimestamp = live.timestamp; }
-                else { livePrice = marketData.currentPrice; liveTimestamp = new Date().toISOString(); }
+
+                const [marketData, live, mtfBias] = await Promise.all([
+                    fetchMarketData(currentSymbol, currentTimeframe),
+                    getRealTimePrice(currentSymbol).catch(() => null),
+                    getMultiTimeframeBias(currentSymbol, currentTimeframe).catch(() => ({ overall: 'neutral', details: [] }))
+                ]);
+
+                let livePrice = live && live.price && !isNaN(live.price) ? live.price : marketData.currentPrice;
+                let liveTimestamp = live && live.timestamp ? live.timestamp : new Date().toISOString();
                 currentPrice = livePrice;
-                if (statusTextLoader) statusTextLoader.innerHTML = 'Calculating 15 indicators...';
+
+                if (statusTextLoader) statusTextLoader.innerHTML = 'Calculating 15 indicators (weighted)...';
                 if (step2) step2.classList.add('active');
-                await new Promise(r => setTimeout(r, 400));
-                const engine = new FifteenIndicatorsVoting(currentSymbol);
+                await new Promise(r => setTimeout(r, 300));
+
+                const engine = new AdvancedTradingEngine(currentSymbol);
                 let result = engine.analyze(marketData.highs, marketData.lows, marketData.closes, marketData.volumes);
+
+                // MTF ALIGNMENT FILTER
+                if (mtfBias.overall !== 'neutral') {
+                    if (result.decision === 'BUY' && mtfBias.overall === 'bearish') {
+                        result.decision = 'HOLD';
+                        result.confidence = Math.max(30, result.confidence - 30);
+                        result.reason = `⚠️ BUY ditolak: HTF bearish (${mtfBias.details.map(d=>d.timeframe+':'+d.bias).join(', ')})`;
+                        result.recommendationText = `Sinyal BUY bertentangan dengan tren higher timeframe. Disarankan HOLD.`;
+                    } else if (result.decision === 'SELL' && mtfBias.overall === 'bullish') {
+                        result.decision = 'HOLD';
+                        result.confidence = Math.max(30, result.confidence - 30);
+                        result.reason = `⚠️ SELL ditolak: HTF bullish (${mtfBias.details.map(d=>d.timeframe+':'+d.bias).join(', ')})`;
+                        result.recommendationText = `Sinyal SELL bertentangan dengan tren higher timeframe. Disarankan HOLD.`;
+                    } else if ((result.decision === 'BUY' && mtfBias.overall === 'bullish') || (result.decision === 'SELL' && mtfBias.overall === 'bearish')) {
+                        result.confidence = Math.min(95, result.confidence + 5);
+                        result.reason += ` | ✓ MTF aligned (${mtfBias.overall})`;
+                    }
+                }
+
                 if (statusTextLoader) statusTextLoader.innerHTML = 'Finalizing signal...';
                 if (step4) step4.classList.add('active');
                 clearInterval(interval);
                 if (progressFill) progressFill.style.width = '100%';
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 400));
                 loader.style.opacity = '0';
                 setTimeout(() => loader.remove(), 400);
                 const tfDisplay = { '1min': 'M1', '5min': 'M5', '15min': 'M15', '30min': 'M30', '1h': 'H1', '4h': 'H4', '1day': 'Daily' }[currentTimeframe] || 'H1';
-                renderSignalOutput(result, currentSymbol, tfDisplay, livePrice, liveTimestamp);
+                renderSignalOutput(result, currentSymbol, tfDisplay, livePrice, liveTimestamp, mtfBias);
             } catch (err) {
                 console.error(err);
                 clearInterval(interval);
                 loader.remove();
-                alert("Error: " + err.message);
                 showToast('❌ Error', err.message, 'fa-exclamation-triangle', 5000);
-                // Refund credit jika gagal
-                lifetimeCredit += 1;
-                localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
+                // Refund dengan benar: kembalikan ke sumber semula
+                if (localStorage.getItem('screener_lifetime_credits') !== null) {
+                    const beforeLifetime = parseInt(localStorage.getItem('screener_lifetime_credits')) || 0;
+                    lifetimeCredit = beforeLifetime + 1;
+                    localStorage.setItem('screener_lifetime_credits', lifetimeCredit);
+                } else {
+                    dailyCredit += 1;
+                    localStorage.setItem('screener_daily_credit', dailyCredit);
+                }
                 updateLimitDisplay();
             }
         };
